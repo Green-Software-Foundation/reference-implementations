@@ -1,0 +1,13 @@
+# sci_for_ai core has zero required dependencies — the entire SCI math,
+# pipeline, and mock provider work on the Python standard library alone.
+# This is intentional: a sustainability reference shouldn't pull megabytes
+# of wheels for no reason.
+#
+# Install only the provider SDKs you actually intend to use:
+#
+#   pip install -r requirements-anthropic.txt
+#   pip install -r requirements-gemini.txt
+#   pip install -r requirements-openai.txt
+#
+# For development (tests, linting):
+#   pip install -r requirements-dev.txt

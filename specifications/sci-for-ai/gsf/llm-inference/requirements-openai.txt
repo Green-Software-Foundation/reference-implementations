@@ -1,0 +1,6 @@
+openai==1.54.0
+# Optional: local tokenisation for count_tokens; falls back to char/4 if absent.
+tiktoken==0.8.0
+# EcoLogits provides measured energy (not estimated) for OpenAI calls.
+# 0.10+ has 93 OpenAI models profiled (gpt-4o, gpt-4.1, o-series, etc).
+ecologits==0.10.1

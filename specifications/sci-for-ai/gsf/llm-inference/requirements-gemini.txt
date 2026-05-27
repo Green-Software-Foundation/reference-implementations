@@ -1,0 +1,3 @@
+google-genai==0.3.0
+# EcoLogits provides measured energy (not estimated) for Gemini calls.
+ecologits==0.10.1

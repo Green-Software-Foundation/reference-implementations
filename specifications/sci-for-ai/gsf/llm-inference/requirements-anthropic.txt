@@ -1,0 +1,3 @@
+anthropic==0.40.0
+# EcoLogits provides measured energy (not estimated) for Anthropic calls.
+ecologits==0.10.1

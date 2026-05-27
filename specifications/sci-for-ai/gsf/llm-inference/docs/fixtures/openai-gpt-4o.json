@@ -1,0 +1,203 @@
+{
+  "query": "How can I reduce the energy consumption and carbon footprint of a Python web service that processes user-uploaded images for resizing and format conversion?",
+  "baseline": {
+    "query": "How can I reduce the energy consumption and carbon footprint of a Python web service that processes user-uploaded images for resizing and format conversion?",
+    "prompt_set": "baseline",
+    "plan": "# Sustainability Analysis Plan for Reducing Energy Consumption and Carbon Footprint of a Python Web Service\n\n## 1. Core Sustainability Challenge\n\nThe primary sustainability challenge presented in reducing the energy consumption and carbon footprint of a Python web service that processes user-uploaded images lies in optimizing the entire service lifecycle according to the following three GSF pillars:\n\n- **Energy Efficiency**: This is prioritized in this context because the core operation involves active computation during image processing. The efficiency of algorithms and execution time are directly tied to energy consumption.\n\n- **Hardware Efficiency**: This is crucial but secondary to energy efficiency. Utilizing the most appropriate hardware resource allocation (e.g., leveraging GPU for parallel image processing) can greatly enhance efficiency.\n\n- **Carbon Awareness**: Although not typically the immediate priority, understanding and reducing the carbon intensity of the electricity used (e.g., switching to data centers powered by renewable energy) can significantly reduce the carbon footprint.\n\nPrioritization is based on the most immediate and direct effects changes can have on energy consumption and efficiency. Tackling energy efficiency first yields direct reductions in resource use, which can then be refined through hardware optimizations and carbon-conscious deployments.\n\n## 2. Key Investigation Areas\n\n1. **Algorithmic Optimization**: \n   - How can algorithms for image resizing and conversion be optimized to reduce execution time and energy use?\n   \n2. **Runtime Efficiency**: \n   - What Python runtime or library options offer higher efficiency for image processing tasks?\n\n3. **Hardware Utilization**: \n   - Can tasks be offloaded to more appropriate hardware like GPUs to reduce processing time and energy consumption?\n\n4. **Resource Scaling**: \n   - How can the service be configured to scale resources dynamically based on demand, ensuring minimal idle-time energy waste?\n\n5. **Carbon-Aware Execution**:\n   - Is it possible to schedule intensive processing tasks during times when cleaner energy sources are available?\n\n6. **Measurement and Monitoring**:\n   - What tools can measure the current energy consumption and carbon emissions of the service to establish a baseline?\n\n7. **Framework or Language Specifics**:\n   - Are there more efficient Python libraries or frameworks for image processing that can replace current implementations?\n\n8. **Cloud-vs-Edge Deployment**:\n   - Would shifting to edge computing reduce energy consumption by processing data closer to the source?\n\n## 3. Technical Research Sources\n\n- **Tools and Frameworks**:\n  - Cpython Profiling tools\n  - Intel VTune Profiler\n\n- **Publications and Guidelines**:\n  - \"Green Software Engineering\" by the Green Software Foundation\n  - Python Enhancement Proposals (PEPs) related to optimization\n\n- **Search Keywords**:\n  - \"Python image processing energy efficiency\"\n  - \"Green Cloud Computing\"\n\n## 4. Implementation Framework\n\n### Immediate Optimisations\n\n- **Algorithm Optimization**:\n  - Use libraries like Pillow-SIMD which provides faster and more efficient image processing than standard libraries.\n  - Example: Replace Pillow with Pillow-SIMD to see immediate performance gains.\n\n- **Reduce Redundant Operations**:\n  - Minimize data conversions; if images are already in the required format, skip those operations.\n\n### Measurement Baselines\n\n- **Tools**:\n  - Use PowerAPI to measure energy consumption.\n  - Log processing times and efficiency using Intel VTune.\n  \n- **Metrics**:\n  - Energy per operation (Joules/operation)\n  - Carbon emissions per operation\n\n### Infrastructure Changes\n\n- **Resource Scaling**:\n  - Implement auto-scaling on cloud services to dynamically adjust resources.\n  \n- **Hardware Optimization**:\n  - Use instances or machines with efficient GPUs if processing large batches of images.\n\n### Longer-Term Architectural Changes\n\n- **Cloud-vs-Edge**:\n  - Implement edge computing for localized processing to reduce data transfer energy costs.\n  - Deploy servers in renewable-energy-powered data centers.\n\n### Continuous Monitoring Practices\n\n- **Implement Energy and Carbon Dashboards**:\n  - Use Grafana with PowerAPI for real-time monitoring of energy usage.\n  \n- **Regular Audits**:\n  - Schedule periodic reviews of hardware and software efficiency.\n\n### Performance vs. Cost vs. Sustainability Trade-Off\n\n- **Short Term Costs**:\n  - Transitioning to more efficient libraries or frameworks may involve upfront learning and implementation time but result in long-term energy savings.\n\n- **Infrastructure Investment**:\n  - Hardware upgrades such as adding GPUs involve cost but offer significant efficiency improvements.\n\n- **Data Transfer Costs**:\n  - Edge computing can reduce data transfer but may introduce complexity in architecture and error handling.\n\nBy adopting these measures, the web service can meaningfully reduce its environmental impact while often improving performance and reducing costs over time. Each element of the plan is actionable and has been set to produce specific, measurable results.",
+    "insights": "### Sustainable Software Techniques for a Python Web Service\n\nThis section provides insights into identified strategies and techniques to enhance sustainability in a Python web service that manages image processing. Each section includes detailed findings with citations, where available.\n\n#### Sustainability Reporting for Named Tools\n\n- **Pillow-SIMD**:\n  - No direct sustainability reports found. However, Pillow-SIMD is known for better performance than standard Pillow, with potential energy savings due to reduced processing time ([source](https://github.com/uploadcare/pillow-simd)).\n\n- **PowerAPI**:\n  - No public information found specifically about sustainability reporting. PowerAPI is an open-source tool designed to measure energy consumption in software systems ([source](https://github.com/powerapi-ng/powerapi)).\n\n#### Environmental and Carbon-Impact Data\n\n- **General Data Centers Impact**:\n  - Data centers account for about 1% of global electricity demand ([source](https://www.iea.org/reports/data-centres-and-data-transmission-networks)), with projections indicating growth. Switching to renewable-powered data centers can proportionally reduce this carbon footprint.\n\n#### Optimization Strategies and Tools\n\n- **Algorithm Optimization with Pillow-SIMD**:\n  - Using Pillow-SIMD can result in faster processing, which indirectly means less energy consumption. Example usage with Pillow-SIMD:\n\n  ```python\n  from PIL import Image\n  \n  # Open an image file\n  with Image.open('example.jpg') as img:\n      # Perform an operation\n      img = img.resize((1024, 768))\n      img.save('resized_example.jpg')\n  ```\n\n- **Runtime Efficiency in Python**:\n  - Leverage PyPy, an alternative Python runtime that can be faster than CPython, reducing execution time and potentially saving energy for certain workloads ([source](https://www.pypy.org/)).\n\n#### Hardware Efficiency and Lifecycle Considerations\n\n- **GPU Utilization**:\n  - GPUs, due to their parallel processing capabilities, are often more efficient than CPUs for image processing tasks, reducing both execution time and energy consumption. Energy reductions can be as high as 30-50% depending on workload type ([source](https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/documents/DesignWorks-Using-GPUs-for-Energy-Efficiency.pdf)).\n\n#### Performance vs. Energy Trade-Offs\n\n- **Energy-Performance Trade-Offs**:\n  - An academic study demonstrated that GPU-accelerated processing could perform 1.6x to 3.5x faster than CPU-based processing, significantly affecting energy usage ([source](https://repository.hkbu.edu.hk/cgi/viewcontent.cgi?article=1200&context=cgcm_rp)). The trade-off includes initial setup costs and potential increases in complexity.\n\n#### Case Studies and Published Sustainability Reports\n\n- **Green Software Foundation**:\n  - This foundation provides guidelines and best practices but no specific case studies on Pillow-SIMD or PowerAPI. They focus broadly on software carbon emissions reduction ([source](https://greensoftware.foundation/)).\n\n#### Data-Consumption Best Practices\n\n- **Edge Computing**:\n  - Reduces the need for data transmission between client and server, saving energy. A study showed up to a 67% decrease in total energy consumption for client-server models by adopting edge computing ([source](https://ieeexplore.ieee.org/document/8580746)).\n\n#### Inferences from General Knowledge\n\n- **Python Libraries**:\n  - Python libraries vary widely in efficiency. Libraries like NumPy and TensorFlow have undergone optimization specifically for efficiency; it's inferred that using optimized libraries yields energy savings by decreasing compute resource usage.\n  \n- **Auto-scaling Infrastructure**:\n  - Adjusting compute resources dynamically can minimize waste. AWS Auto Scaling, for example, helps maintain optimal resource levels, correlated to a reduction in idle-energy usage.\n\n### Conclusion\n\nOptimizing a Python web service for sustainability involves a multifaceted approach encompassing software, hardware, and operational strategies. Each layer of optimization, from algorithm efficiency to infrastructure management, contributes to reducing the overall energy footprint. Although not every tool and strategy has direct sustainability reporting, the aggregate energy savings and efficiency improvements suggest a substantial positive environmental impact over time. Such comprehensive optimization aligns with broader goals in sustainable software engineering.",
+    "report": "# Comprehensive Sustainability Report for Reducing Energy Consumption and Carbon Footprint of a Python Web Service\n\n## Energy Efficiency Strategies\n\n### Algorithmic Optimization\nOptimizing algorithms for image processing can significantly reduce execution time and energy use, as they are at the core of the service's functionality.\n\n**Key Technique**: Use Pillow-SIMD instead of standard Pillow.\n\n**Before Optimization** (using standard Pillow):\n```python\nfrom PIL import Image\n\nwith Image.open('example.jpg') as img:\n    img = img.resize((1024, 768))\n    img.save('resized_example.jpg')\n```\n\n**After Optimization** (using Pillow-SIMD):\n```bash\npip install pillow-simd\n```\n```python\nfrom PIL import Image\n\nwith Image.open('example.jpg') as img:\n    img = img.resize((1024, 768))\n    img.save('resized_example.jpg')\n```\nBy switching to Pillow-SIMD, processing becomes faster, indirectly reducing energy use due to lesser computation time ([source](https://github.com/uploadcare/pillow-simd)).\n\n### Runtime Efficiency\nLeverage alternative runtimes like PyPy, which can be faster than CPython for certain workloads.\n\n**Installation Command**:\n```bash\nsudo apt-get install pypy\n```\nThese optimization techniques can lead to noticeable efficiency improvements, making image processing more sustainable.\n\n### Energy Profiling Tools\nUsing PowerAPI to measure energy consumption can help establish a solid baseline for further optimization.\n\n**Installation Command**:\n```bash\npip install powerapi\n```\n\n## Hardware Resource Optimization\n\n### GPU Utilization\nReplacing traditional CPU processing with GPU can cut execution time and energy use by 30-50%. Ensure the software is configured to leverage GPU resources.\n\n**Configuration Example**:\n```python\nimport torch\n\ndevice = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\n```\n\nDeploying image processing tasks on GPU hardware enables parallel processing, significantly increasing throughput and reducing energy consumption ([source](https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/documents/DesignWorks-Using-GPUs-for-Energy-Efficiency.pdf)).\n\n### Memory and Network Optimization\nReduce memory usage by optimizing data structures and limit data transfer to what's essential, lowering energy costs associated with data read/write operations.\n\n### Storage Optimization\nUtilize faster storage solutions, like SSDs, for reduced read/write latency, improving service efficiency.\n\n## Carbon-Aware Computing Practices\n\n### Workload Scheduling\nConsider workload scheduling to times when the grid is cleaner (renewable energy is abundant). This could involve:\n\n- **Schedule Timing**: Align batch processing to occur during periods of high renewable energy supply.\n- **Tooling Example**: Use a carbon-intensity API to schedule tasks when the grid is greener.\n\n### Regional Deployment\nDeploy services in data regions with a higher proportion of renewable energy. Many cloud providers indicate regions where they optimize for renewable energy.\n\n### Carbon Emission Calculations\nUtilize energy consumption data with regional carbon intensity figures to calculate and monitor emissions regularly.\n\n## Trade-Offs and Practical Considerations\n\n### Performance vs. Energy\nSwitching to more efficient algorithms and runtimes can incur initial upfront costs in terms of learning curves and installer configurations. \n\n### Real World Challenges\nImplementing such optimizations requires balancing immediate performance requirements against long-term sustainability gains, considering factors like potential increased complexity and infrastructural changes.\n\n## Implementation Roadmap\n\n### Immediate Actions\n1. Implement Pillow-SIMD and monitor performance changes.\n2. Start using PowerAPI for current energy profiling.\n\n### Measurement Baselines\n1. Establish energy consumption baselines using existing profiling tools.\n   \n### Medium-Term Architectural Improvements\n1. Transition to GPU-accelerated processing where applicable.\n2. Explore edge computing possibilities to localize processing.\n\n### Continuous Monitoring Practices\n1. Set up dashboards with tools like Grafana for real-time monitoring.\n2. Schedule regular audits to track hardware and software efficiency improvements.\n\n## Conclusion\n\nImplementing these strategies aligns with greater goals of sustainable software engineering, offering avenues to decrease energy consumption and carbon footprint. Adopting these enhancements not only benefits the environment but potentially boosts operational efficiency and cost-effectiveness.\n\nIn moving forward, continuously refining these practices based on empirical data and emerging technologies will solidify the Python web service's commitment to sustainability.\n\n**Next Steps**:\n- Execute the immediate actions defined.\n- Regularly revisit energy usage to refine and adapt strategies.\n\n**Disclaimer**: This report is generated by an AI system for educational purposes; verify independently before production use.",
+    "measurements": [
+      {
+        "phase": "baseline:planning",
+        "input_tokens": 266,
+        "output_tokens": 971,
+        "energy_kwh": 0.0017724643380967768,
+        "carbon_intensity": 0.413,
+        "embodied_kg": 1.722656326041753e-05,
+        "wall_time_s": 6.621217333999084,
+        "region": "us-central1",
+        "cost_usd": 0.010375,
+        "total_tokens": 1237,
+        "operational_kg": 0.0007320277716339687,
+        "total_emissions_kg": 0.0007492543348943863,
+        "sci": 6.057027767941683e-07
+      },
+      {
+        "phase": "baseline:collection",
+        "input_tokens": 1132,
+        "output_tokens": 876,
+        "energy_kwh": 0.0016190989616459528,
+        "carbon_intensity": 0.413,
+        "embodied_kg": 1.9717770507819902e-05,
+        "wall_time_s": 7.572846707997087,
+        "region": "us-central1",
+        "cost_usd": 0.01159,
+        "total_tokens": 2008,
+        "operational_kg": 0.0006686878711597785,
+        "total_emissions_kg": 0.0006884056416675984,
+        "sci": 3.4283149485438167e-07
+      },
+      {
+        "phase": "baseline:writing",
+        "input_tokens": 2063,
+        "output_tokens": 927,
+        "energy_kwh": 0.0016880394290673178,
+        "carbon_intensity": 0.413,
+        "embodied_kg": 1.559027636719179e-05,
+        "wall_time_s": 5.989834708001581,
+        "region": "us-central1",
+        "cost_usd": 0.0144275,
+        "total_tokens": 2990,
+        "operational_kg": 0.0006971602842048022,
+        "total_emissions_kg": 0.000712750560571994,
+        "sci": 2.3837811390367693e-07
+      }
+    ],
+    "totals": {
+      "energy_kwh": 0.005079602728810048,
+      "input_tokens": 3461,
+      "output_tokens": 2774,
+      "total_tokens": 6235,
+      "operational_kg": 0.0020978759269985494,
+      "embodied_kg": 5.253461013542922e-05,
+      "total_emissions_kg": 0.0021504105371339785,
+      "wall_time_s": 20.183898749997752,
+      "cost_usd": 0.036392499999999994,
+      "sci_per_request": 0.0021504105371339785,
+      "sci_per_call": 0.0007168035123779928,
+      "sci_per_token": 3.448934301738538e-07,
+      "sci": 3.448934301738538e-07,
+      "embodied_pct": 2.4430037533877713,
+      "n_calls": 3
+    },
+    "energy_source": "measured",
+    "model": "gpt-4o",
+    "region": "us-central1"
+  },
+  "optimized": {
+    "query": "How can I reduce the energy consumption and carbon footprint of a Python web service that processes user-uploaded images for resizing and format conversion?",
+    "prompt_set": "optimized",
+    "plan": "- **GSF Pillars:**\n  - Prioritise **energy** and **carbon-aware** execution to directly reduce consumption and emissions.\n  - Evaluate **hardware** choices to ensure efficient operation.\n\n- **Investigation Questions:**\n  - How efficient are the current image processing algorithms? Can they be optimized or replaced?\n  - Does the Python runtime support efficient concurrency and asynchronous execution?\n  - What hardware optimizations (CPU/GPU) can reduce the energy per processed image?\n  - Is the service over-scaled? Can autoscaling be optimized?\n  - Can image processing tasks be scheduled for times of low carbon grid intensity?\n  - How can energy usage and emissions be accurately measured and tracked?\n  - Does the web framework offer options for reduced energy usage?\n  - Is cloud deployment more energy-efficient than edge processing, or vice versa?\n\n- **Tools, Frameworks, Sources:**\n  - PIL (Pillow) for efficient image processing in Python.\n  - NumPy for optimized array operations.\n  - Docker to ensure lightweight, scalable service deployment.\n  - Kubernetes for efficient container orchestration and scaling.\n  - Apache Kafka for streamlining asynchronous processing and load management.\n  - Efficient use of AWS/Azure/GCP\u2019s carbon tracking tools.\n  - Carbon Intensity API for carbon-aware scheduling.\n  - Prometheus and Grafana for robust monitoring.\n  - TensorFlow Lite if exploiting machine learning for image optimization.\n  - PyTest and Locust for testing efficiency under load.\n\n- **Implementation:**\n  - Quick Wins: Optimize existing code, enable server-side caching, use efficient libraries.\n  - Measurement Baseline: Implement Prometheus to establish current energy consumption metrics.\n  - Infrastructure Changes: Transition to cloud providers offering renewable-powered data centers.\n  - Long-Term Architecture: Explore serverless architectures to scale efficiently based on load.\n  - Monitoring: Use Grafana dashboards to visualize and analyze energy and carbon data.\n\n- **Trade-offs:**\n  - Short-term costs increase due to infrastructure changes.\n  - Potential complexity in adopting new frameworks or libraries.\n  - The balance between execution speed and energy efficiency.",
+    "insights": "### Sustainability Reporting for Named Entities\n- **AWS**: Amazon has committed to powering its operations with 100% renewable energy by 2025. They report on their sustainability progress annually. [Source: AWS Sustainability](https://sustainability.aboutamazon.com/)\n- **Microsoft Azure**: Achieved carbon neutrality in 2012 and targets becoming carbon negative by 2030. Azure provides sustainability reporting and tools to measure carbon impact. [Source: Microsoft Sustainability](https://www.microsoft.com/en-us/sustainability)\n- **Google Cloud Platform (GCP)**: Operates on carbon-free energy 24/7 by 2030 and provides detailed sustainability reports. [Source: Google Sustainability](https://sustainability.google/)\n\n### Carbon-Impact Data\n- **Carbon Intensity API**: Offers access to grid-level carbon intensity data, allowing applications to schedule tasks when the grid is greener. [Source: Carbon Intensity API](https://carbon-intensity.github.io/api-definitions)\n\n### Optimization Strategies & Tools\n- **Python and Caching**: Enable server-side caching to reduce redundant processing and optimize existing algorithms with NumPy and Pillow for better performance.\n  ```python\n  from PIL import Image\n  import numpy as np\n\n  def optimize_image(image_path):\n      image = Image.open(image_path)\n      # Example conversion to numpy for batch processing\n      image_array = np.array(image)\n      # Further processing...\n      return image_array\n  ```\n\n- **Concurrency in Python**: Use the asyncio library for asynchronous execution, which allows better use of system resources and can reduce processing time.\n  ```python\n  import asyncio\n\n  async def process_image_async(image_path):\n      # Asynchronous image processing code\n      pass\n  ```\n\n- **Hardware Optimization**: Utilize GPUs for image processing tasks as they are more energy-efficient for parallelizable workloads. Consider machine learning packages like TensorFlow Lite for lightweight model inference on edge devices.\n\n### Hardware Efficiency & Lifecycle\n- **Modern CPUs vs. GPUs**: GPUs are often more energy-efficient than CPUs for heavy parallel computations involved in image processing. [Source: Journal of Parallel and Distributed Computing, Energy Efficiency Analysis]\n- **Lifecycle Impact**: Evaluate the total lifecycle impact including manufacturing and disposal of hardware when choosing between cloud and edge processing. [No public info]\n\n### Perf-vs-Energy Trade-offs\n- **Quantitative Example**: Assume a switch from a CPU to GPU for image processing results in a 50% reduction in processing time but requires 25% more energy. The trade-off here could be justified if it significantly reduces operational time-related costs.\n- **Concurrency vs. Energy Usage**: While concurrency can reduce total processing time, it might increase peak energy consumption momentarily. It's essential to balance concurrency levels with energy goals. [No public info]\n\n### Case Studies\n- **Netflix**: Implemented a carbon-aware load shifting strategy to dynamically route traffic to more sustainable regions. This approach reduced their carbon footprint significantly. [No public info]\n- **Ikea**: Transitioned digital platforms to more energy-efficient cloud infrastructure, achieving significant energy savings. [Source: Microsoft Case Study]\n\n### Data-Consumption Practices\n- **Efficient Use of Data**: Minimize data movement and processing through local caching strategies and make use of in-situ processing when possible. Maintain awareness of the energy cost associated with data-transfer activities.\n\n### Inferences and Flags\n- **Inferences**: Given AWS, Azure, and GCP's commitments to renewable energy, utilizing their data centers can inherently support sustainable practices.\n- **Flag**: Quantitative perf-vs-energy trade-off data is limited and often requires specific infrastructure for accurate measurement; thus, relying on generalized studies may not capture true application specifics.\n\n### Markdown Formatting\n```markdown\n**Key Points:**\n- Implement efficient coding and hardware practices to achieve sustainability.\n- Utilize cloud resources from providers with strong renewable energy policies for deployment.\n- Measure and monitor energy consumption using tools like Prometheus and Grafana.\n\n**Trade-offs and Strategies:**\n- Balance between performance and energy efficiency is critical.\n- Expect increased short-term costs when transitioning infrastructure but anticipate long-term gains in sustainability.\n```",
+    "report": "## Energy Efficiency Strategies\n- Prioritize energy and carbon-aware execution to reduce consumption and emissions.\n- Optimize image processing algorithms using efficient libraries like PIL (Pillow) and NumPy.\n- Enable server-side caching to minimize redundant processing.\n\n## Hardware Resource Optimization\n- Evaluate and utilize hardware choices such as GPUs for energy-efficient parallelizable workloads.\n- Consider modern CPUs vs. GPUs for energy-efficient processing, with a focus on lifecycle impacts.\n\n## Carbon-Aware Computing Practices\n- Use cloud providers like AWS, Azure, and GCP with commitments to renewable energy for deployments.\n- Implement scheduling tasks based on low carbon grid intensity using the Carbon Intensity API.\n- Deploy with Kubernetes for efficient autoscaling and orchestration.\n\n## Trade-Offs and Practical Considerations\n- Balance between execution speed and energy efficiency; concurrency can reduce processing time but may increase peak energy consumption.\n- Short-term costs may increase due to infrastructure changes, but expect long-term sustainability benefits.\n\n## Implementation Roadmap\n- Quick wins: Optimize existing code and libraries, enable caching.\n- Use Prometheus for establishing current energy consumption metrics.\n- Transition to cloud providers offering renewable-powered data centers.\n- Explore serverless architectures to scale efficiently with demand.\n\n## Conclusion\n- Implement efficient coding practices and utilize cloud resources with strong renewable energy policies for sustainable deployments.\n- Accurate measurement and monitoring of energy consumption are key to effective sustainability initiatives.",
+    "measurements": [
+      {
+        "phase": "optimized:planning",
+        "input_tokens": 148,
+        "output_tokens": 430,
+        "energy_kwh": 0.000802036361079528,
+        "carbon_intensity": 0.413,
+        "embodied_kg": 1.119405848697852e-05,
+        "wall_time_s": 4.30164595899987,
+        "region": "us-central1",
+        "cost_usd": 0.00467,
+        "total_tokens": 578,
+        "operational_kg": 0.0003312410171258451,
+        "total_emissions_kg": 0.0003424350756128236,
+        "sci": 5.924482277038471e-07
+      },
+      {
+        "phase": "optimized:collection",
+        "input_tokens": 531,
+        "output_tokens": 852,
+        "energy_kwh": 0.0016117300958843664,
+        "carbon_intensity": 0.413,
+        "embodied_kg": 2.688380967968366e-05,
+        "wall_time_s": 10.324573249999958,
+        "region": "us-central1",
+        "cost_usd": 0.0098475,
+        "total_tokens": 1383,
+        "operational_kg": 0.0006656445296002433,
+        "total_emissions_kg": 0.0006925283392799269,
+        "sci": 5.007435569630708e-07
+      },
+      {
+        "phase": "optimized:writing",
+        "input_tokens": 1366,
+        "output_tokens": 278,
+        "energy_kwh": 0.0005172656724981532,
+        "carbon_intensity": 0.413,
+        "embodied_kg": 6.974555445310671e-06,
+        "wall_time_s": 2.681209458001831,
+        "region": "us-central1",
+        "cost_usd": 0.006195,
+        "total_tokens": 1644,
+        "operational_kg": 0.00021363072274173728,
+        "total_emissions_kg": 0.00022060527818704796,
+        "sci": 1.3418812541791238e-07
+      }
+    ],
+    "totals": {
+      "energy_kwh": 0.002931032129462048,
+      "input_tokens": 2045,
+      "output_tokens": 1560,
+      "total_tokens": 3605,
+      "operational_kg": 0.0012105162694678257,
+      "embodied_kg": 4.505242361197285e-05,
+      "total_emissions_kg": 0.0012555686930797985,
+      "wall_time_s": 17.30742866700166,
+      "cost_usd": 0.0207125,
+      "sci_per_request": 0.0012555686930797985,
+      "sci_per_call": 0.0004185228976932662,
+      "sci_per_token": 3.482853517558387e-07,
+      "sci": 3.482853517558387e-07,
+      "embodied_pct": 3.5882085831133033,
+      "n_calls": 3
+    },
+    "energy_source": "measured",
+    "model": "gpt-4o",
+    "region": "us-central1"
+  },
+  "delta": {
+    "input_tokens": {
+      "baseline": 3461,
+      "optimized": 2045,
+      "reduction_pct": 40.91303091592026
+    },
+    "output_tokens": {
+      "baseline": 2774,
+      "optimized": 1560,
+      "reduction_pct": 43.7635183850036
+    },
+    "total_tokens": {
+      "baseline": 6235,
+      "optimized": 3605,
+      "reduction_pct": 42.1812349639134
+    },
+    "energy_kwh": {
+      "baseline": 0.005079602728810048,
+      "optimized": 0.002931032129462048,
+      "reduction_pct": 42.29800466800139
+    },
+    "total_emissions_kg": {
+      "baseline": 0.0021504105371339785,
+      "optimized": 0.0012555686930797985,
+      "reduction_pct": 41.61260506316186
+    },
+    "cost_usd": {
+      "baseline": 0.036392499999999994,
+      "optimized": 0.0207125,
+      "reduction_pct": 43.08580064573744
+    },
+    "sci_per_request": {
+      "baseline": 0.0021504105371339785,
+      "optimized": 0.0012555686930797985,
+      "reduction_pct": 41.61260506316186
+    },
+    "sci_per_call": {
+      "baseline": 0.0007168035123779928,
+      "optimized": 0.0004185228976932662,
+      "reduction_pct": 41.61260506316185
+    },
+    "sci_per_token": {
+      "baseline": 3.448934301738538e-07,
+      "optimized": 3.482853517558387e-07,
+      "reduction_pct": -0.9834694677353283
+    },
+    "sci": {
+      "baseline": 3.448934301738538e-07,
+      "optimized": 3.482853517558387e-07,
+      "reduction_pct": -0.9834694677353283
+    }
+  }
+}

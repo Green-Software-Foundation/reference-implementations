@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sci-for-ai"
+version = "0.1.0"
+description = "Reference implementation of the GSF SCI for AI specification, applied to LLM inference workloads."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["sci", "green-software", "sustainability", "llm", "carbon", "energy"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+# Zero core dependencies — see requirements*.txt for provider extras.
+dependencies = []
+
+[project.optional-dependencies]
+# EcoLogits is strongly recommended for any real-provider use — without
+# it, energy figures come from model-card estimates rather than the
+# provider's actual usage. Each extra below pins both the SDK and ecologits.
+anthropic = ["anthropic>=0.40.0", "ecologits>=0.5.0"]
+gemini    = ["google-genai>=0.3.0", "ecologits>=0.5.0"]
+openai    = ["openai>=1.50.0", "tiktoken>=0.8.0", "ecologits>=0.5.0"]
+# 'all' lets you install everything in one go.
+all       = [
+    "anthropic>=0.40.0",
+    "google-genai>=0.3.0",
+    "openai>=1.50.0",
+    "tiktoken>=0.8.0",
+    "ecologits>=0.5.0",
+]
+dev       = ["pytest>=8.0", "pytest-cov>=5.0"]
+
+[project.scripts]
+sci-for-ai = "sci_for_ai.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v"

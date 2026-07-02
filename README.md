@@ -69,6 +69,7 @@ lives in reflects who stewards it, not who originally built it.
 | Project | Implements | Category | Maintainer |
 |---|---|---|---|
 | [sci-for-ai / llm-inference](./specifications/sci-for-ai/gsf/llm-inference/) | [SCI for AI](https://sci-for-ai.greensoftware.foundation/) applied to LLM inference | Specifications | GSF |
+| [green-code-skill](https://github.com/Green-Software-Foundation/reference-implementations/tree/main/tools/gsf/green-code-skill) | GSF Patterns Catalog and SCI principles applied to code generation and code review by agentic coding tools | Tools| GSF |
 
 ## Contributing
 

@@ -1,6 +1,6 @@
 ---
 name: green-code-skill
-description: Apply Green Software Foundation patterns and SCI (Software Carbon Intensity) principles when generating new code or reviewing existing code. Use this skill whenever the user asks to write, refactor, optimize, or review code with any mention of sustainability, carbon footprint, energy efficiency, green coding, eco-friendly software, climate impact, or compute/cloud cost reduction — and proactively when designing cloud architectures, AI/ML pipelines, agentic AI systems, web frontends, or data-handling code where green patterns measurably reduce emissions. Covers 40+ patterns across Development, Architecture, AI/ML, and agentic AI workloads (retry budgets, planning depth, model right-sizing, response caching, tool-call thrashing).
+description: Apply Green Software Foundation patterns and SCI (Software Carbon Intensity) principles when generating new code or reviewing existing code. Use this skill whenever the user asks to write, refactor, optimize, or review code with any mention of sustainability, carbon footprint, energy efficiency, green coding, eco-friendly software, climate impact, or compute/cloud cost reduction — and proactively when designing cloud architectures, AI/ML pipelines, agentic AI systems, web frontends, or data-handling code where green patterns measurably reduce emissions. Covers 40+ patterns across Development, Architecture, AI/ML, and agentic AI workloads (retry budgets, planning depth, model right-sizing, response caching, loop-safe tool calling).
 ---
 
 # Green Code Skill

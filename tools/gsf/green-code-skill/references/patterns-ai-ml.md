@@ -144,7 +144,7 @@ These patterns target the energy and emissions profile of agentic AI systems —
 - **SCI:** Reduces E (fewer calls) and improves R.
 - **Pillar:** Energy efficiency.
 
-### Detect and break tool-call thrashing
+### Detect and break tool-call loops
 - **Problem:** Agents can fall into loops where they call the same tool with the same args, or oscillate between two tool calls, burning calls without progress.
 - **Detection signals:** No loop-detection on tool-call history, identical tool invocations in adjacent steps, no progress metric per iteration.
 - **Fix:** Track a hash of (tool_name, args) per iteration; if the same invocation appears twice (or oscillates) within a short window, break and ask the user; consider memory of "what I already tried."

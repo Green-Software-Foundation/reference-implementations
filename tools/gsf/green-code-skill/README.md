@@ -23,7 +23,7 @@ The skill covers:
 - **23 patterns from the GSF Development category** — data handling, media efficiency, web performance, cloud deployment
 - **17 patterns from the GSF Architecture category** — system topology and technology selection
 - **9 AI/ML model and training patterns** cross-referenced from the Development and Architecture categories
-- **10 agentic AI workload patterns** applying the same SCI principles to LLM-driven orchestration — model routing, retry budgets, planning depth caps, response and prompt caching, parallel tool calls, two-stage retrieval, structured output, `max_tokens` hygiene, and tool-call thrashing detection
+- **10 agentic AI workload patterns** applying the same SCI principles to LLM-driven orchestration — model routing, retry budgets, planning depth caps, response and prompt caching, parallel tool calls, two-stage retrieval, structured output, `max_tokens` hygiene, and loop-safe tool calling
 
 Choices this implementation made, documented so readers can evaluate them against their own context:
 

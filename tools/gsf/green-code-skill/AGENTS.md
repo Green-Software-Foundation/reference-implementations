@@ -192,7 +192,7 @@ Applied to LLM-driven orchestration, agentic loops, and tool-calling workflows. 
 - **Pre-filter retrieval before reranking** — two-stage: cheap recall → expensive precision rerank on top-N.
 - **Stop generation when sufficient** — set `max_tokens`, use stop sequences, prompt for concise answers.
 - **Prefer structured output over multi-turn negotiation** — structured-output APIs with schema validation; one call, one validation pass.
-- **Detect and break tool-call thrashing** — hash (tool_name, args) per iteration; break on repeats or oscillation.
+- **Detect and break tool-call loops** — hash (tool_name, args) per iteration; break on repeats or oscillation.
 
 ## Trade-offs — when NOT to apply a pattern
 

@@ -1,0 +1,1370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic AI Cost &amp; Carbon Explorer — a GSF Reference Implementation (educational)</title>
+<meta name="description" content="An educational GSF reference implementation for visualizing the dollar, energy, carbon and water cost of an agentic AI workload — and how reduction levers pull it down. Illustrative estimates from cited, editable defaults; designed to be extended with your own models, grids and levers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F3F5F0; --ink:#17231D; --muted:#5A685E; --line:#D8DED2;
+    --bill:#FFFFFF; --amber:#E8A013; --amber-soft:#FBEFD3;
+    --leaf:#2F7D4F; --leaf-soft:#E3F0E7; --ember:#C24A2B;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *{transition:none!important;animation:none!important}}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.55;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:56px 56px;background-position:-1px -1px}
+  a{color:var(--leaf)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* ---------- header ---------- */
+  header{padding:34px 0 22px;background:linear-gradient(rgba(243,245,240,.65),rgba(243,245,240,.65))}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  h1{font-size:clamp(28px,4.4vw,44px);font-weight:700;letter-spacing:-.02em;line-height:1.08;margin:8px 0 10px}
+  h1 .amp{color:var(--amber)}
+  .lede{max-width:62ch;color:var(--muted)}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .badge{font-family:var(--mono);font-size:11px;padding:4px 10px;border:1px solid var(--ink);border-radius:999px;background:var(--bill)}
+  .badge.hl{background:var(--amber-soft);border-color:var(--amber)}
+  .notice{background:var(--amber-soft);border:1.5px solid var(--amber);border-radius:10px;padding:10px 14px;margin-top:14px;font-size:12.5px;max-width:100ch}
+  .notice b{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+  .stamp{position:absolute;top:54px;right:10px;transform:rotate(8deg);font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--ember);border:1.5px solid var(--ember);border-radius:4px;padding:2px 7px;opacity:.85;pointer-events:none}
+  .receipt{position:relative}
+  .extend{background:var(--bill);border:1.5px solid var(--ink);border-radius:10px;padding:20px 22px;margin-bottom:22px}
+  .extend h2{font-size:16px;margin-bottom:4px}
+  .extend .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .extend .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+  .extend .col h3{font-size:13.5px;margin-bottom:5px}
+  .extend .col h3 .n{font-family:var(--mono);color:var(--leaf);margin-right:4px}
+  .extend .col p{font-size:12.5px;color:var(--muted)}
+  .extend .col code{font-family:var(--mono);font-size:11px;display:block;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:9px 11px;margin-top:8px;overflow-x:auto;line-height:1.7;white-space:pre}
+  code.inl{font-family:var(--mono);font-size:.92em;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+
+  /* ---------- layout ---------- */
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:28px;padding:30px 0 8px;align-items:start}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+  section.panel{background:var(--bill);border:1.5px solid var(--ink);border-radius:10px;padding:20px 20px 22px;margin-bottom:22px;box-shadow:4px 4px 0 rgba(23,35,29,.10)}
+  .panel h2{font-size:17px;font-weight:700;display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+  .panel h2 .tag{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--bill);background:var(--ink);padding:2px 7px;border-radius:4px}
+  .panel .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+  /* presets */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .chip{font-family:var(--sans);font-size:13.5px;font-weight:500;padding:7px 13px;border:1.5px solid var(--ink);border-radius:999px;background:var(--bill);cursor:pointer;transition:background .12s}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+  .chip:hover{background:var(--amber-soft)}
+  .chip[aria-pressed="true"]:hover{background:var(--ink)}
+
+  /* sliders */
+  .ctl{margin:13px 0}
+  .ctl label{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;font-weight:500;margin-bottom:5px;gap:10px}
+  .ctl label .val{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--amber-soft);padding:1px 8px;border-radius:4px;white-space:nowrap}
+  input[type=range]{width:100%;accent-color:var(--amber);height:22px}
+  .hint{font-size:12px;color:var(--muted);margin-top:2px}
+  details.fine{margin-top:14px;border-top:1px dashed var(--line);padding-top:10px}
+  details.fine summary{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer}
+  details.fine summary:hover{color:var(--ink)}
+
+  /* model + grid option cards */
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .opt{border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;background:var(--bill);text-align:left;font-family:var(--sans);transition:border-color .12s}
+  .opt:hover{border-color:var(--ink)}
+  .opt[aria-pressed="true"]{border-color:var(--ink);background:var(--amber-soft);box-shadow:2px 2px 0 rgba(23,35,29,.15)}
+  .opt .nm{font-weight:700;font-size:14px}
+  .opt .meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+
+  /* per-role stages editor */
+  .stg-toggle{display:flex;gap:10px;align-items:flex-start;margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+  .stg-toggle input{width:19px;height:19px;accent-color:var(--amber);margin-top:1px;cursor:pointer;flex:none}
+  .stg-toggle label{font-size:13px;color:var(--muted);cursor:pointer}
+  .stg-toggle label b{color:var(--ink);font-size:13.5px}
+  #stages{margin-top:8px}
+  .stg-row{display:grid;grid-template-columns:minmax(88px,1.1fr) minmax(118px,1.4fr) repeat(4,minmax(58px,.85fr)) 30px;gap:8px;align-items:end;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .stg-row>label{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;flex-direction:column;gap:3px;min-width:0}
+  .stg-row input,.stg-row select{font-family:var(--mono);font-size:12.5px;padding:6px 7px;border:1.5px solid var(--line);border-radius:6px;background:var(--bill);width:100%;min-width:0}
+  .stg-row input:focus,.stg-row select:focus{border-color:var(--ink);outline:none}
+  .stg-row input.stg-role{font-weight:600;font-family:var(--sans)}
+  .stg-x{border:1.5px solid var(--line);background:var(--bill);border-radius:6px;height:31px;cursor:pointer;color:var(--muted);font-size:15px;line-height:1}
+  .stg-x:hover:not(:disabled){border-color:var(--ember);color:var(--ember)}
+  .stg-x:disabled{opacity:.35;cursor:default}
+  #stg-add{margin-top:10px;font-family:var(--sans);font-weight:600;font-size:12.5px;padding:7px 12px;border:1.5px dashed var(--ink);border-radius:8px;background:var(--bill);cursor:pointer}
+  #stg-add:hover{background:var(--amber-soft)}
+  #stg-add:disabled{opacity:.4;cursor:default}
+  .stg-sum{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px}
+  @media (max-width:640px){.stg-row{grid-template-columns:1fr 1fr 1fr;align-items:end}.stg-x{height:30px}}
+  .ctl.dim{opacity:.4;pointer-events:none}
+
+  /* levers */
+  .lever{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:11px 0;border-bottom:1px dashed var(--line)}
+  .lever:last-of-type{border-bottom:none}
+  .lever input[type=checkbox]{width:19px;height:19px;margin-top:2px;accent-color:var(--leaf);cursor:pointer}
+  .lever .nm{font-weight:600;font-size:14px;cursor:pointer}
+  .lever .nm .st{font-family:var(--mono);font-size:10.5px;color:var(--muted);font-weight:400;margin-left:6px}
+  .lever .note{font-size:12.5px;color:var(--muted)}
+  .lever .save{font-family:var(--mono);font-size:12px;text-align:right;white-space:nowrap;color:var(--muted)}
+  .lever .save.on{color:var(--leaf);font-weight:600}
+  .lever-group{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:14px 0 2px}
+  .lever-group:first-of-type{margin-top:4px}
+
+  /* waterfall */
+  .wf{margin-top:18px}
+  .wf h3{font-size:13px;font-weight:700;margin-bottom:8px}
+  .wf-bar{display:flex;height:26px;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;background:var(--paper)}
+  .wf-seg{height:100%;min-width:0;transition:width .3s ease}
+  .wf-remain{background:var(--amber)}
+  .wf-remain.co2{background:var(--ink)}
+  .wf-cut{background:var(--leaf-soft);border-left:1.5px dashed var(--leaf)}
+  .wf-cap{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:4px 2px 14px}
+  .wf-cap b{color:var(--leaf)}
+
+  /* ---------- receipt ---------- */
+  .receipt-col{position:sticky;top:16px}
+  @media (max-width:900px){.receipt-col{position:static}}
+  .receipt{background:var(--bill);border:1.5px solid var(--ink);border-bottom:none;border-radius:10px 10px 0 0;padding:18px 18px 8px;font-family:var(--mono);box-shadow:4px 4px 0 rgba(23,35,29,.10)}
+  .receipt-tear{height:14px;background:
+      linear-gradient(-45deg,transparent 7px,var(--bill) 7px) 0 0/14px 14px repeat-x,
+      linear-gradient(45deg,transparent 7px,var(--bill) 7px) 0 0/14px 14px repeat-x;
+      filter:drop-shadow(4px 4px 0 rgba(23,35,29,.10));margin-bottom:8px}
+  .receipt .r-head{text-align:center;border-bottom:1.5px dashed var(--ink);padding-bottom:10px;margin-bottom:10px}
+  .receipt .r-head .t{font-weight:600;font-size:13px;letter-spacing:.14em}
+  .receipt .r-head .s{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .rline{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0}
+  .rline .k{color:var(--muted)}
+  .rline .v{font-weight:600;text-align:right}
+  .rline .v .was{display:block;font-weight:400;font-size:10.5px;color:var(--muted);text-decoration:line-through}
+  .rline.big .v{font-size:19px}
+  .rline.big .k{align-self:end;padding-bottom:2px}
+  .rsep{border-top:1.5px dashed var(--ink);margin:9px 0}
+  .rsub{font-size:10.5px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin:8px 0 2px}
+  .rsave{background:var(--leaf-soft);border-radius:6px;padding:7px 10px;margin:9px 0 2px;font-size:12px;color:var(--leaf);font-weight:600;display:none}
+  .rsave.show{display:block}
+  .req{font-size:11.5px;color:var(--muted);padding:2px 0}
+  .req b{color:var(--ink)}
+
+  /* efficiency band */
+  .band{display:flex;gap:3px;margin:10px 0 4px}
+  .band span{flex:1;text-align:center;font-size:10.5px;font-weight:600;color:var(--bill);padding:3px 0;border-radius:3px;opacity:.28;transition:opacity .2s}
+  .band span.on{opacity:1;outline:2px solid var(--ink);outline-offset:1px}
+  .band-note{font-size:10px;color:var(--muted)}
+
+  /* ---------- methodology & sources ---------- */
+  .foot{padding:8px 0 56px}
+  .method{background:var(--ink);color:var(--paper);border-radius:10px;padding:20px 22px;margin-bottom:22px}
+  .method h2{font-size:16px;margin-bottom:8px}
+  .method code{font-family:var(--mono);font-size:12.5px;display:block;background:rgba(255,255,255,.08);padding:10px 12px;border-radius:6px;margin:8px 0;overflow-x:auto;line-height:1.7}
+  .method p{font-size:13px;color:#C7D2C9;max-width:80ch}
+  .src{background:var(--bill);border:1.5px solid var(--ink);border-radius:10px;padding:20px 22px}
+  .src h2{font-size:16px;margin-bottom:4px}
+  .src .sub{font-size:13px;color:var(--muted);margin-bottom:12px}
+  .src ul{list-style:none}
+  .src li{font-size:13px;padding:7px 0;border-bottom:1px dashed var(--line);display:grid;grid-template-columns:minmax(140px,220px) 1fr;gap:14px}
+  .src li:last-child{border-bottom:none}
+  .src li .what{font-family:var(--mono);font-size:11.5px;color:var(--muted);padding-top:1px}
+  @media (max-width:640px){.src li{grid-template-columns:1fr}}
+  .disclaimer{font-size:12px;color:var(--muted);margin-top:16px;max-width:86ch}
+  /* tab navigation */
+  .tabs{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid var(--ink)}
+  .tabs .row{display:flex;gap:4px;overflow-x:auto;padding:10px 0 0}
+  .tab{font-family:var(--sans);font-weight:600;font-size:13.5px;padding:9px 16px;border:1.5px solid var(--ink);border-bottom:none;border-radius:8px 8px 0 0;background:var(--bill);color:var(--muted);cursor:pointer;white-space:nowrap}
+  .tab .k{font-family:var(--mono);font-size:10px;color:var(--amber);margin-right:5px}
+  .tab[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+  .tab:hover:not([aria-selected="true"]){color:var(--ink);background:var(--amber-soft)}
+  .view{display:none}
+  .view.on{display:block}
+  /* problem statement */
+  .problem{background:var(--bill);border:1.5px solid var(--ink);border-radius:10px;padding:24px 26px;margin-top:28px;box-shadow:4px 4px 0 rgba(23,35,29,.10)}
+  .problem h2{font-size:20px;margin-bottom:10px}
+  .problem p{max-width:86ch;margin-bottom:10px;font-size:14.5px}
+  .problem p:last-child{margin-bottom:0}
+  .problem .pt{font-family:var(--mono);font-weight:600;color:var(--amber);margin-right:2px}
+  /* worked example guide */
+  .guide{background:var(--bill);border:1.5px solid var(--ink);border-radius:10px;padding:24px 26px;margin-bottom:22px;box-shadow:4px 4px 0 rgba(23,35,29,.10)}
+  .guide h2{font-size:20px;margin-bottom:4px}
+  .guide>.sub{font-size:13.5px;color:var(--muted);margin-bottom:18px;max-width:80ch}
+  .step{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 0;border-top:1px dashed var(--line)}
+  .step .num{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--bill);background:var(--ink);width:34px;height:34px;border-radius:8px;display:grid;place-items:center}
+  .step h3{font-size:15.5px;margin-bottom:5px}
+  .step p{font-size:13.5px;color:var(--muted);max-width:78ch;margin-bottom:6px}
+  .step p:last-child{margin-bottom:0}
+  .step p b{color:var(--ink)}
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;margin:10px 0 4px}
+  .fbox{border:1.5px solid var(--ink);border-radius:8px;padding:7px 11px;font-size:12px;background:var(--paper);min-width:100px}
+  .fbox .fn{font-weight:700;font-size:12.5px}
+  .fbox .fm{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+  .fbox.loop{background:var(--amber-soft);border-style:dashed}
+  .farrow{align-self:center;font-family:var(--mono);color:var(--muted);padding:0 2px}
+  .map{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}
+  .map th,.map td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px dashed var(--line);vertical-align:top}
+  .map th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .map td:last-child{font-family:var(--mono);white-space:nowrap}
+  .gnum{font-family:var(--mono);font-weight:600;background:var(--amber-soft);border-radius:4px;padding:0 6px;white-space:nowrap}
+  .gnum.gn{background:var(--leaf-soft);color:var(--leaf)}
+  .gbtns{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .gbtn{font-family:var(--sans);font-weight:600;font-size:13.5px;padding:9px 16px;border:1.5px solid var(--ink);border-radius:8px;cursor:pointer;background:var(--ink);color:var(--paper)}
+  .gbtn.alt{background:var(--leaf);border-color:var(--leaf);color:#fff}
+  .gbtn:hover{opacity:.88}
+  /* in-practice framework pills, accordions, key-value rows */
+  .ptabs{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+  .ptab{font-family:var(--sans);font-weight:600;font-size:13px;padding:7px 14px;border:1.5px solid var(--ink);border-radius:999px;background:var(--bill);cursor:pointer;transition:background .12s}
+  .ptab[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+  .ptab:hover:not([aria-pressed="true"]){background:var(--amber-soft)}
+  .pview{display:none}
+  .pview.on{display:block}
+  .fwline{font-size:13px;color:var(--muted);margin-bottom:10px;max-width:86ch}
+  details.acc{border:1.5px solid var(--line);border-radius:8px;margin:8px 0;background:var(--bill)}
+  details.acc[open]{border-color:var(--ink)}
+  details.acc summary{cursor:pointer;padding:10px 14px;font-size:13.5px;display:flex;justify-content:space-between;gap:12px;align-items:baseline;list-style:none}
+  details.acc summary::-webkit-details-marker{display:none}
+  details.acc summary::after{content:"+";font-family:var(--mono);font-size:14px;color:var(--muted);flex:none}
+  details.acc[open] summary::after{content:"−"}
+  details.acc summary:hover{background:var(--amber-soft);border-radius:7px}
+  details.acc .body{padding:10px 14px 12px;border-top:1px dashed var(--line)}
+  details.acc .body p{font-size:12.5px;color:var(--muted);max-width:80ch;margin-bottom:8px}
+  details.acc .body p:last-child{margin-bottom:0}
+  details.acc .body p b{color:var(--ink)}
+  .hsum{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-align:right}
+  code.blk{font-family:var(--mono);font-size:11px;display:block;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:9px 11px;margin:6px 0 2px;overflow-x:auto;line-height:1.7;white-space:pre}
+  .kv{display:grid;grid-template-columns:160px 1fr;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+  .kv:last-child{border-bottom:none}
+  .kv>span:first-child{font-family:var(--mono);font-size:11px;color:var(--muted);padding-top:1px}
+  .kv code{font-family:var(--mono);font-size:.92em;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+  @media (max-width:640px){.kv{grid-template-columns:1fr;gap:2px}.hsum{display:none}}
+  /* worked-example architecture sub-tabs */
+  .gtabs{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 6px;border-top:1px dashed var(--line);padding-top:18px}
+  .gtab{font-family:var(--sans);font-weight:600;font-size:13.5px;padding:8px 16px;border:1.5px solid var(--ink);border-radius:999px;background:var(--bill);cursor:pointer;transition:background .12s}
+  .gtab[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+  .gtab:hover:not([aria-pressed="true"]){background:var(--amber-soft)}
+  .gtab .gk{font-family:var(--mono);font-size:10px;color:var(--amber);margin-right:6px}
+  .gview{display:none}
+  .gview.on{display:block}
+  /* context-growth chart */
+  .cg{margin-top:16px;border-top:1px dashed var(--line);padding-top:12px}
+  .cg h3{font-size:13px;font-weight:700;margin-bottom:2px}
+  .cg .sub2{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .cg-bars{display:flex;align-items:flex-end;gap:2px;height:88px}
+  .cg-col{flex:1;position:relative;height:100%;display:flex;align-items:flex-end}
+  .cg-b{width:100%;background:var(--amber-soft);border:1px solid var(--amber);border-bottom-width:2px;border-radius:2px 2px 0 0;min-height:2px}
+  .cg-r{position:absolute;left:0;right:0;bottom:0;background:var(--leaf);opacity:.85;border-radius:2px 2px 0 0;min-height:2px}
+  .cg-cap{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:4px}
+  .cg-leg{font-size:11px;color:var(--muted);margin-top:5px}
+  .cg-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin:0 4px 0 10px}
+  /* toast */
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:12px;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50}
+  .toast.show{opacity:1}
+  :focus-visible{outline:2.5px solid var(--amber);outline-offset:2px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Green Software Foundation · Reference Implementation · for education &amp; awareness</div>
+    <h1>What does your AI agent cost —<br>in dollars <span class="amp">&amp;</span> in carbon?</h1>
+    <p class="lede">An agent isn’t one model call — and increasingly it isn’t even one agent. Modern systems are small teams of roles: a router that classifies, a worker loop that reasons and acts, a guardrail that checks — each role a model of its own, all re-processing a growing transcript on every turn. Cost compounds invisibly, and the energy, carbon and water behind it never appear on any invoice. What can’t be seen can’t be reduced. This educational tool makes the shape visible: design the team, read its bill, flip the reduction levers.</p>
+    <div class="badges">
+      <span class="badge hl">Multi-agent edition</span>
+      <span class="badge">Per-role stages: each agent priced on its own model</span>
+      <span class="badge">Single-agent mode remains the default — leave stages off</span>
+    </div>
+    <p class="lede" style="margin-top:12px;font-size:13px">This edition extends the earlier <b>single-agent</b> calculator to <b>multi-agent implementations</b>: turn on <em>per-role stages</em> to give each agent its own model tier and token profile, or leave it off to model one agent with one profile — the original behaviour, unchanged.</p>
+    <div class="notice"><b>GSF Reference Implementation · for awareness, not reporting</b> — an educational, illustrative example of applying <a href="https://sci-for-ai.greensoftware.foundation/">SCI for AI</a> (ISO/IEC&nbsp;21031:2024). Its purpose is to <em>raise awareness</em> of the cost and environmental impact of agentic AI and build intuition about reducing it. Its figures are estimates from cited defaults and <em>must not</em> be used for sustainability reporting, ESG disclosure, or marketing claims. <a href="https://greensoftware.foundation/articles/introducing-gsf-reference-implementations/">About reference implementations →</a></div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap row" role="tablist">
+    <button class="tab" role="tab" data-view="calc" aria-selected="true"><span class="k">1</span>Calculator</button>
+    <button class="tab" role="tab" data-view="guide" aria-selected="false"><span class="k">2</span>Worked example</button>
+    <button class="tab" role="tab" data-view="practice" aria-selected="false"><span class="k">3</span>In practice</button>
+    <button class="tab" role="tab" data-view="extend" aria-selected="false"><span class="k">4</span>Extend it</button>
+    <button class="tab" role="tab" data-view="method" aria-selected="false"><span class="k">5</span>Methodology &amp; sources</button>
+  </div>
+</nav>
+
+<div id="view-calc" class="view on">
+<main class="wrap grid">
+  <div style="grid-column:1/-1;font-family:var(--mono);font-size:11.5px;color:var(--muted);border:1.5px dashed var(--ink);border-radius:8px;padding:8px 12px;background:var(--bill)">ESTIMATION PROXIES, NOT INSTRUMENTED TELEMETRY — use these numbers to compare architectures and drive efficiency, never to publish. For SDK-measured, per-call figures, see the GSF <a href="https://github.com/Green-Software-Foundation/reference-implementations/tree/main/specifications/sci-for-ai/gsf/llm-inference">sci-for-ai reference implementation</a>.</div>
+  <div>
+    <!-- 1 · WORKLOAD -->
+    <section class="panel" aria-labelledby="h-work">
+      <h2 id="h-work"><span class="tag">1</span> Your workload</h2>
+      <p class="sub">An agent is a loop: every turn re-processes the growing transcript, then adds output and tool results to it. That accumulation — not the answers — is what dominates the bill.</p>
+      <div class="chips" role="group" aria-label="Workload presets" id="presets"></div>
+      <div class="ctl">
+        <label for="turns">Turns per run <span class="val" id="v-turns"></span></label>
+        <input type="range" id="turns" min="1" max="40" step="1">
+        <div class="hint">Model calls in one task: a chatbot exchange is 2–5, a coding agent 8–15, deep research 20+.</div>
+      </div>
+      <div class="ctl">
+        <label for="runs">Runs per day <span class="val" id="v-runs"></span></label>
+        <input type="range" id="runs" min="0" max="60" step="1">
+        <div class="hint">Scaled over a 22-workday month.</div>
+      </div>
+      <div class="cg">
+        <h3>Why it compounds</h3>
+        <div class="sub2">Each bar = the input tokens processed at that turn: <span style="font-family:var(--mono)">bar(t) = system prompt + everything generated before turn t (outputs + tool results)</span>, from your inputs above. This staircase is <b>default behaviour</b> across major LLM APIs: whether your client resends the transcript or the provider stores conversation state for you, the full context is processed — and billed — on every request, so cumulative cost grows roughly quadratically. The departures from that default are exactly the levers below: <b>caching</b> discounts the re-processed prefix, and a <b>memory layer</b> (summarise &amp; retrieve) shrinks what is carried at all. The <b>heights are your assumptions</b>, not measurements: change the sliders and the staircase changes.</div>
+        <div class="cg-bars" id="cg" aria-label="Input tokens per turn"></div>
+        <div class="cg-cap"><span>turn 1</span><span id="cg-max"></span><span id="cg-last"></span></div>
+        <div class="cg-leg" id="cg-leg" hidden>baseline<i style="background:var(--amber-soft);border:1px solid var(--amber)"></i> with your levers<i style="background:var(--leaf)"></i></div>
+      </div>
+      <details class="fine">
+        <summary>Fine-tune tokens per turn</summary>
+        <div class="ctl"><label for="sys">System + task prompt (re-processed every turn) <span class="val" id="v-sys"></span></label><input type="range" id="sys" min="200" max="8000" step="100"></div>
+        <div class="ctl"><label for="out">Output tokens per turn <span class="val" id="v-out"></span></label><input type="range" id="out" min="50" max="2000" step="50"></div>
+        <div class="ctl"><label for="reason">Reasoning tokens per turn <span class="val" id="v-reason"></span></label><input type="range" id="reason" min="0" max="4000" step="100"></div>
+        <div class="ctl"><label for="tool">Tool-result tokens per turn <span class="val" id="v-tool"></span></label><input type="range" id="tool" min="0" max="4000" step="100"></div>
+        <div class="ctl"><label for="retry">Retry rate <span class="val" id="v-retry"></span></label><input type="range" id="retry" min="0" max="50" step="1"></div>
+        <div class="ctl"><label for="crate">Cache-read rate <span class="val" id="v-crate"></span></label><input type="range" id="crate" min="5" max="75" step="5">
+        <div class="hint">What a cached input token costs vs. a fresh one — applies when the caching lever is on. Provider economics vary widely: ~10% (Anthropic cache reads) to 25–50% (others). Cache-write premiums, TTL and storage fees are not modelled.</div></div>
+        <div class="ctl"><label for="util">Hardware utilization (embodied M) <span class="val" id="v-util"></span></label><input type="range" id="util" min="10" max="100" step="5">
+        <div class="hint">100% = accelerators amortized at rated load, the most favorable case. Real inference fleets run well below that — lower this to see how idle hardware inflates the embodied carbon of every token (M scales as 1/utilization).</div></div>
+      </details>
+    </section>
+
+    <!-- 2 · MODEL -->
+    <section class="panel" aria-labelledby="h-model">
+      <h2 id="h-model"><span class="tag">2</span> The model</h2>
+      <p class="sub">Price bands from 2026 API pricing surveys; per-token energy calibrated so a short query lands in the published 0.3–1&nbsp;Wh range and a long reasoning prompt approaches ~33&nbsp;Wh.</p>
+      <div class="opts" role="group" aria-label="Model tier" id="models"></div>
+      <div class="stg-toggle">
+        <input type="checkbox" id="stagesOn">
+        <label for="stagesOn"><b>Per-role stages</b> — give each role (router, loop, guardrail…) its own model tier and per-turn token profile. The transcript flows through the stages in order and the system prompt is shared; turns and per-turn tokens are set per stage while this is on.</label>
+      </div>
+      <div id="stages" hidden>
+        <div id="stg-rows"></div>
+        <button id="stg-add" type="button">+ Add stage</button>
+        <div class="stg-sum" id="stg-sum"></div>
+      </div>
+    </section>
+
+    <!-- 3 · GRID -->
+    <section class="panel" aria-labelledby="h-grid">
+      <h2 id="h-grid"><span class="tag">3</span> Where it runs</h2>
+      <p class="sub">The same kWh emits 13× more CO₂e on a coal-heavy grid than on hydro or nuclear. Facility overhead (PUE&nbsp;1.2) and water use are added on top.</p>
+      <div class="opts" role="group" aria-label="Grid carbon intensity" id="grids"></div>
+    </section>
+
+    <!-- 4 · REDUCE -->
+    <section class="panel" aria-labelledby="h-red">
+      <h2 id="h-red"><span class="tag">4</span> Reduce it</h2>
+      <p class="sub">Levers apply as a waterfall: each one transforms the workload and the whole run is re-simulated, so overlapping savings are honest and never sum past 100%.</p>
+      <div id="levers"></div>
+      <div class="wf" id="waterfall" hidden>
+        <h3>Where the savings come from</h3>
+        <div class="wf-bar" id="wf-cost" aria-label="Cost after levers vs baseline"></div>
+        <div class="wf-cap"><span>monthly cost</span><span id="wf-cost-cap"></span></div>
+        <div class="wf-bar" id="wf-co2" aria-label="Carbon after levers vs baseline"></div>
+        <div class="wf-cap"><span>monthly CO₂e</span><span id="wf-co2-cap"></span></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- RECEIPT -->
+  <aside class="receipt-col" aria-label="Live estimate">
+    <div class="receipt" id="receipt" aria-live="polite">
+      <div class="stamp" aria-hidden="true">AWARENESS · NOT FOR REPORTING</div>
+      <div class="r-head">
+        <div class="t">AI UTILITY BILL</div>
+        <div class="s" id="r-config"></div>
+        <div class="s">illustrative estimate — actuals vary by provider, hardware &amp; region</div>
+      </div>
+      <div class="rsub">Per run</div>
+      <div class="rline big"><span class="k">cost</span><span class="v" id="r-cost"></span></div>
+      <div class="rline"><span class="k">energy (incl. PUE 1.2)</span><span class="v" id="r-energy"></span></div>
+      <div class="rline"><span class="k">carbon (SCI: E·I + M)</span><span class="v" id="r-co2"></span></div>
+      <div class="rline"><span class="k">&nbsp;&nbsp;operational · embodied</span><span class="v" id="r-co2split" style="font-weight:400;color:var(--muted)"></span></div>
+      <div class="rline"><span class="k">water</span><span class="v" id="r-water"></span></div>
+      <div class="rline"><span class="k">tokens in / out</span><span class="v" id="r-tok"></span></div>
+      <div class="rsep"></div>
+      <div class="rsub">Per month <span id="r-scale"></span></div>
+      <div class="rline big"><span class="k">cost</span><span class="v" id="r-mcost"></span></div>
+      <div class="rline"><span class="k">energy</span><span class="v" id="r-menergy"></span></div>
+      <div class="rline"><span class="k">carbon</span><span class="v" id="r-mco2"></span></div>
+      <div class="rline"><span class="k">water</span><span class="v" id="r-mwater"></span></div>
+      <div class="rsave" id="r-save"></div>
+      <div class="rsep"></div>
+      <div class="rsub">Carbon rating · per run</div>
+      <div class="band" id="band"></div>
+      <div class="band-note">For intuition only — indicative bands (gCO₂e per run) invented for this demo, not a formal label or standard: A&nbsp;≤2 · B&nbsp;≤10 · C&nbsp;≤30 · D&nbsp;≤100 · E&nbsp;≤300 · F&nbsp;≤1000 · G&nbsp;&gt;1000.</div>
+      <div class="rsep"></div>
+      <div class="rsub">A month of this ≈</div>
+      <div class="req" id="eq-phone"></div>
+      <div class="req" id="eq-car"></div>
+      <div class="req" id="eq-led"></div>
+      <div class="rsep"></div>
+      <div class="req" style="font-size:10px;line-height:1.5">This bill exists to <b>raise awareness</b>. It is an illustrative estimate — <b>not</b> for sustainability reporting, ESG disclosure, or marketing claims.</div>
+      <div class="gbtns" style="margin-top:10px"><button class="gbtn" id="share" style="width:100%;font-size:12.5px">Share this scenario — copy link</button></div>
+    </div>
+    <div class="receipt-tear" aria-hidden="true"></div>
+  </aside>
+</main>
+</div><!-- /view-calc -->
+
+<div id="view-guide" class="view">
+<div class="wrap" style="padding-top:26px">
+  <section class="problem" aria-labelledby="h-problem">
+    <h2 id="h-problem">First, the problem</h2>
+    <p>Every organization shipping agentic AI faces the same two questions — <b>what does this actually cost, and what is its environmental impact?</b> — and finds that neither is visible where decisions get made.</p>
+    <p><span class="pt">01</span> An agent is not one model call — and a production system is rarely one agent. A single user request fans out across a team of roles — a router, a worker loop with its planning, tool use and retries, a guardrail — each potentially a different model, and every turn re-processes an ever-growing transcript. Cost compounds in a way no per-token price sheet reveals; teams routinely discover it only when the invoice arrives.</p>
+    <p><span class="pt">02</span> The environmental side never appears on an invoice at all. The energy, carbon and water behind a workload depend on which model ran, on what hardware, in which region, at what hour — details that sit outside most engineering dashboards.</p>
+    <p><span class="pt">03</span> What can't be seen can't be reduced. And waiting for perfect measurement before starting leaves teams without a starting point at all.</p>
+    <p>This educational reference implementation exists to make that shape <b>visible</b>: a place to build intuition about where the dollars and grams of an agentic workload come from, and which design decisions move them — before, and alongside, real measurement.</p>
+  </section>
+</div>
+<div class="wrap foot">
+  <section class="guide" aria-labelledby="h-guide">
+    <h2 id="h-guide">From idea to estimate: a worked example</h2>
+    <p class="sub">The calculator is abstract until you map a real application onto it. Here is one job, worked end to end <b>twice</b> — first as a <b>single agent</b> (the calculator’s default mode: stages off, one model, one profile), then as a <b>three-agent system</b> priced per role with stages mode — showing how each design decision becomes a number, what each baseline looks like, and in which order a team would reduce it. Same job, same engine, two architectures: the gap between them is the whole argument. All figures are computed live.</p>
+
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <h3>The job to be done</h3>
+        <p>A retailer receives <b>800 support tickets a day</b>: order status, refunds, delivery issues. The team wants an agent that reads the ticket, looks up the order, consults policy, and either resolves or drafts an escalation. Before building, they want to see the shape of the cost and footprint — per ticket and per month.</p>
+      </div>
+    </div>
+
+    <div class="gtabs" role="group" aria-label="Choose an architecture to walk through">
+      <button class="gtab" type="button" data-g="single" aria-pressed="true"><span class="gk">A</span>Single agent · default mode</button>
+      <button class="gtab" type="button" data-g="multi" aria-pressed="false"><span class="gk">B</span>Multi-agent · per-role stages</button>
+    </div>
+
+    <div class="gview on" id="gv-single">
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <h3>Design the workflow — one agent does everything</h3>
+        <p>The simplest architecture: one model, one loop, one token profile. The intent classification, the tool-calling turns and the final policy self-check are all just turns inside the same loop — which means every one of them, however trivial, is priced at the workhorse rate. This is what the calculator models with <b>stages off</b>: the four sliders in panel 1 describe every turn identically.</p>
+        <div class="flow" role="img" aria-label="Single-agent workflow: ticket in, one reason-and-act loop of 8 turns on a mid model covering classification, retrieval, order lookup, refund API and self-check, reply out">
+          <div class="fbox"><div class="fn">Ticket in</div><div class="fm">~300 tok</div></div><div class="farrow">→</div>
+          <div class="fbox loop"><div class="fn">One agent · loop ×8</div><div class="fm">mid model · classify · retrieve · act (order lookup, refund API) · self-check</div></div><div class="farrow">→</div>
+          <div class="fbox"><div class="fn">Reply</div><div class="fm">~250 tok</div></div>
+        </div>
+        <p>Design choices that will dominate the bill: <b>how many turns the loop runs</b>, <b>how much each tool returns</b>, and <b>how big the standing prompt is</b> — because the loop re-processes all of it, plus the growing transcript, every turn.</p>
+        <p><b>In practice:</b> this is LangGraph’s <span style="font-family:var(--mono);font-size:12px">create_react_agent</span>, a single ADK <span style="font-family:var(--mono);font-size:12px">LlmAgent</span> with tools, or one OpenAI Agents SDK <span style="font-family:var(--mono);font-size:12px">Agent</span> — see the <b>In practice</b> tab for the full mapping.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <h3>Translate the design into the model</h3>
+        <p>Each decision maps to one calculator input — the classic single-profile mapping:</p>
+        <table class="map">
+          <tr><th>Design decision</th><th>Reasoning</th><th>Input</th></tr>
+          <tr><td>Eight turns of one loop</td><td>classify (1) + retrieve &amp; act (6) + self-check (1) — all the same agent, same model</td><td>turns = 8</td></tr>
+          <tr><td>Standing instructions + the ticket</td><td>persona, policies, tool schemas (~1,500) plus the ~300-token ticket — re-processed every turn</td><td>system + task = 1,800 tok</td></tr>
+          <tr><td>Tool returns</td><td>order record + KB/policy slice returned on each acting turn (incl. the initial retrieval)</td><td>tool results = 1,000 tok/turn</td></tr>
+          <tr><td>Replies kept tight</td><td>customer-facing answers, not essays</td><td>output = 250 tok</td></tr>
+          <tr><td>Light deliberation</td><td>brief reasoning on refund decisions only</td><td>reasoning = 200 tok</td></tr>
+          <tr><td>Flaky order API</td><td>observed failure + re-run rate</td><td>retries = 10%</td></tr>
+          <tr><td>One model for everything, global grid</td><td>the workhorse tier does every job; region not yet chosen</td><td>mid · 450 gCO₂e/kWh</td></tr>
+        </table>
+        <p style="margin-top:10px"><b>How the engine prices it.</b> Same formula as always — <span style="font-family:var(--mono);font-size:12px">input(t) = 1,800 shared tokens + everything earlier turns appended</span> — but here <em>every</em> token is read at mid-tier prices. Turn 1, the one-line classification, reads <span class="gnum" id="gs-w1in"></span> and costs <span class="gnum" id="gs-w1c"></span>; by turn 8, the routine self-check, the loop re-reads <span class="gnum" id="gs-w8in"></span> for <span class="gnum" id="gs-w8c"></span>. Those are exactly the trivial jobs the multi-agent tab prices at small-tier rates instead.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">4</div>
+      <div>
+        <h3>Read the baseline</h3>
+        <p>The engine prices the single-agent design at <span class="gnum" id="gs-cost"></span> and <span class="gnum" id="gs-co2"></span> per ticket — which feels like nothing until step 1’s scale applies: at 800 tickets/day over a 22-working-day month that is <span class="gnum" id="gs-mcost"></span>, <span class="gnum" id="gs-menergy"></span> and <span class="gnum" id="gs-mco2"></span> every month. Notice the carbon split (<span id="gs-split"></span>): the embodied share is small on this grid, but it would dominate on a low-carbon one — and only using less compute reduces it. For reference, the multi-agent tab delivers the same job at <span class="gnum gn" id="gs-vs"></span> from architecture alone.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">5</div>
+      <div>
+        <h3>Reduce it — in the order a team would</h3>
+        <p>In single-agent mode, routing is <em>approximated, not designed</em>: the <b>right-size lever</b> sends 50% of turns to the small tier as a statistical stand-in for the explicit router/guardrail split the multi-agent tab builds in. So the plan is: <b>add a memory layer first</b> — summarise history and retrieve the relevant slice (the carried transcript is the biggest line item), <b>cache the stable prefix</b> (those 1,800 system tokens are identical every turn), <b>right-size the model</b>, then <b>bound the loop</b>. With those four levers this design lands at <span class="gnum gn" id="gs-rcost"></span> and <span class="gnum gn" id="gs-rco2"></span> per month — <span class="gnum gn" id="gs-pct"></span>.</p>
+        <p>The remaining levers (batching, carbon-aware placement) are the operations conversation to have once the design is efficient. And when you’re ready to make the routing explicit instead of statistical, switch to the <b>multi-agent tab</b> — same job, per-role pricing.</p>
+        <div class="gbtns">
+          <button class="gbtn" id="gs-load">Load the single-agent example</button>
+          <button class="gbtn alt" id="gs-load-red">Load it with the reduction plan on</button>
+        </div>
+      </div>
+    </div>
+    </div><!-- /gv-single -->
+
+    <div class="gview" id="gv-multi">
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <h3>Design the multi-agent workflow</h3>
+        <p>A production agentic system is a small team of agents relaying one transcript. This example uses three — and the design discipline is to give <b>each agent its own model</b>, sized to its job, rather than paying the workhorse rate for a one-line classification:</p>
+        <div class="flow" role="img" aria-label="Multi-agent workflow: ticket in, router agent on a small model, retrieval, worker agent reason-and-act loop of about 6 turns on a mid model with order lookup and refund API tools, guardrail agent on a small model, reply out">
+          <div class="fbox"><div class="fn">Ticket in</div><div class="fm">~300 tok</div></div><div class="farrow">→</div>
+          <div class="fbox"><div class="fn">Router</div><div class="fm">classify intent · small · 1 turn</div></div><div class="farrow">→</div>
+          <div class="fbox"><div class="fn">Retrieve</div><div class="fm">KB + policy slice · ~1k tok</div></div><div class="farrow">→</div>
+          <div class="fbox loop"><div class="fn">Reason + act loop ×6</div><div class="fm">mid model · tools: order lookup, refund API</div></div><div class="farrow">→</div>
+          <div class="fbox"><div class="fn">Guardrail</div><div class="fm">policy check · small · 1 turn</div></div><div class="farrow">→</div>
+          <div class="fbox"><div class="fn">Reply</div><div class="fm">~250 tok</div></div>
+        </div>
+        <p>Design choices that will dominate the bill: <b>how many turns the worker loop runs</b>, <b>how much each tool returns</b>, <b>how big the shared standing prompt is</b> — because every agent re-processes all of it, plus the growing transcript, on every turn — and <b>which model each role runs on</b>.</p>
+        <p><b>In practice:</b> one LangGraph <span style="font-family:var(--mono);font-size:12px">StateGraph</span> node per role, or ADK’s <span style="font-family:var(--mono);font-size:12px">SequentialAgent(sub_agents=[router, LoopAgent(worker), guardrail])</span> with a <span style="font-family:var(--mono);font-size:12px">model=</span> per agent — the <b>In practice</b> tab shows the code.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <h3>Translate the design into stages</h3>
+        <p>In stages mode, each agent maps to one stage — its own model tier, turn count and per-turn token profile — while the standing prompt, retries and grid stay shared:</p>
+        <table class="map">
+          <tr><th>Design decision</th><th>Reasoning</th><th>Input</th></tr>
+          <tr><td>Three agents, one relay</td><td>router → worker loop → guardrail; the transcript flows through all of them</td><td>stages = 3 · turns = 1 + 6 + 1</td></tr>
+          <tr><td>Router agent</td><td>classify intent; a one-line verdict, no tools</td><td>small · 1 turn · 60 tok out</td></tr>
+          <tr><td>Worker agent (loop)</td><td>reasons, calls the order &amp; refund tools (1,000 tok returned per acting turn, incl. the initial retrieval), drafts the reply, with light deliberation on refunds</td><td>mid · 6 turns · 250 out · 200 reason · 1,000 tool</td></tr>
+          <tr><td>Guardrail agent</td><td>policy check on the final reply</td><td>small · 1 turn · 100 tok out</td></tr>
+          <tr><td>Standing instructions + the ticket</td><td>persona, policies, tool schemas (~1,500) plus the ~300-token ticket — shared, re-processed by every agent on every turn</td><td>system + task = 1,800 tok</td></tr>
+          <tr><td>Flaky order API</td><td>observed failure + re-run rate</td><td>retries = 10%</td></tr>
+          <tr><td>Region not yet chosen</td><td>world-average carbon intensity</td><td>global · 450 gCO₂e/kWh</td></tr>
+        </table>
+        <p style="margin-top:10px"><b>How the engine prices it, stage by stage.</b> Every turn’s input follows one formula — <span style="font-family:var(--mono);font-size:12px">input(t) = 1,800 shared tokens + everything earlier turns appended</span> — but the <em>price and energy</em> of those tokens depend on which stage’s model is reading them. The table below is computed live by the engine (raw stage sums; retries and facility overhead are applied at the bottom, exactly as in the methodology formula):</p>
+        <table class="map">
+          <tr><th>stage</th><th>model</th><th>turns</th><th>input tok (Σ)</th><th>output tok (Σ)</th><th>cost</th><th>energy</th></tr>
+          <tbody id="g-stgrows"></tbody>
+        </table>
+        <p style="margin-top:10px"><b>Follow the transcript through three of the eight turns.</b>
+        <b>Turn 1 — Router (small):</b> nothing carried yet, so input = <span class="gnum" id="g-w1in"></span>; at small-tier prices that turn costs <span class="gnum" id="g-w1c"></span>, and its 60-token verdict joins the transcript.
+        <b>Turn 2 — Worker (mid):</b> the expensive tier meets a growing context: input = 1,800 + 60 carried = <span class="gnum" id="g-w2in"></span>, costing <span class="gnum" id="g-w2c"></span> — and each worker turn appends another 1,250 tokens (250 output + 1,000 tool results), so by its last turn the worker is re-reading <span class="gnum" id="g-w7in"></span>.
+        <b>Turn 8 — Guardrail (small):</b> it reads the most tokens of any agent — <span class="gnum" id="g-w8in"></span>, the full accumulated transcript — yet costs only <span class="gnum gn" id="g-w8c"></span>, because <em>tier beats length</em>. That single turn is the whole argument for per-role stages.</p>
+        <p style="margin-top:8px"><b>Why per-role, demonstrated.</b> The lazy mapping — all 8 turns priced on the mid tier — would put this same ticket at <span class="gnum" id="g-ucost"></span> and <span class="gnum" id="g-uco2"></span>, <span class="gnum" id="g-umcost"></span> at scale. Giving the router and guardrail their own small tier is the multi-agent design’s first free win: <span class="gnum gn" id="g-upct"></span>, before any reduction lever is touched. The <b>single-agent tab</b> walks that uniform mapping through in full.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">4</div>
+      <div>
+        <h3>Read the baseline</h3>
+        <p>The engine prices the three-agent design at <span class="gnum" id="g-cost"></span> and <span class="gnum" id="g-co2"></span> per ticket — which feels like nothing until step 1's scale applies: at 800 tickets/day over a 22-working-day month that is <span class="gnum" id="g-mcost"></span>, <span class="gnum" id="g-menergy"></span> and <span class="gnum" id="g-mco2"></span> every month. Notice the carbon split (<span id="g-split"></span>): the embodied share is small on this grid, but it would dominate on a low-carbon one — and only using less compute reduces it.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">5</div>
+      <div>
+        <h3>Reduce it — in the order a team would</h3>
+        <p><b>Add a memory layer first</b> — summarise history and retrieve the relevant slice (the carried transcript is the biggest line item), <b>cache the stable prefix</b> (those 1,800 system tokens are identical every turn), <b>right-size the model</b> (the router and guardrail already run small — this lever routes the easy turns <em>inside the worker loop</em> to the small tier too), then <b>bound the loop</b> (only the 6-turn worker shrinks; the 1-turn agents are already minimal). With those four levers this example lands at <span class="gnum gn" id="g-rcost"></span> and <span class="gnum gn" id="g-rco2"></span> per month — <span class="gnum gn" id="g-pct"></span> — with the waterfall showing what each lever contributed, honestly, after the ones before it.</p>
+        <p>The remaining levers (batching, carbon-aware placement) are the operations conversation to have once the design is efficient.</p>
+        <div class="gbtns">
+          <button class="gbtn" id="g-load">Load the three-agent example (per-role stages)</button>
+          <button class="gbtn alt" id="g-load-red">Load it with the reduction plan on</button>
+        </div>
+      </div>
+    </div>
+    </div><!-- /gv-multi -->
+  </section>
+</div><!-- /foot guide -->
+</div><!-- /view-guide -->
+
+<div id="view-practice" class="view">
+<div class="wrap foot">
+  <section class="extend">
+    <h2>From calculator to code: framework grounding</h2>
+    <p class="sub">Every concept this calculator prices has a concrete handle in the mainstream agent frameworks — pick yours, then expand the architecture you’re building. Both worked-example architectures can be built as written. Names checked against the linked docs (vintage 2026-Q3); framework APIs evolve quickly, so verify before you build.</p>
+
+    <div class="ptabs" role="group" aria-label="Choose a framework">
+      <button class="ptab" type="button" data-p="lg"   aria-pressed="true">LangGraph / LangChain</button>
+      <button class="ptab" type="button" data-p="adk"  aria-pressed="false">Google ADK</button>
+      <button class="ptab" type="button" data-p="oai"  aria-pressed="false">OpenAI Agents SDK</button>
+      <button class="ptab" type="button" data-p="crew" aria-pressed="false">CrewAI</button>
+    </div>
+
+    <div class="pview on" id="pv-lg">
+      <p class="fwline">LangChain’s runtime for stateful, graph-structured agents (<a href="https://langchain-ai.github.io/langgraph/">docs</a>). Translation key: a calculator <b>turn</b> = one model-calling graph step · a <b>stage</b> = a node · the <b>transcript</b> = the messages state · <b>bound the loop</b> = <code class="inl">recursion_limit</code>.</p>
+      <details class="acc" open>
+        <summary><b>Single agent — stages off</b><span class="hsum">create_react_agent · recursion_limit</span></summary>
+        <div class="body">
+          <p>One model, one tool-calling loop — the calculator’s default mode, with the four sliders describing every turn identically.</p>
+          <code class="blk">agent = create_react_agent(
+    model=mid_model,                    # panel 2’s tier
+    tools=[order_lookup, refund_api])
+
+agent.invoke({"messages": [ticket]},
+    config={"recursion_limit": 8})      # bound the loop</code>
+        </div>
+      </details>
+      <details class="acc">
+        <summary><b>Multi-agent — per-role stages</b><span class="hsum">StateGraph · one node per role</span></summary>
+        <div class="body">
+          <p>A stage = a node; each node calls <b>its own model</b> — exactly what stages mode prices. The supervisor pattern is the dynamic-routing variant of the same idea.</p>
+          <code class="blk">g = StateGraph(State)
+g.add_node("router",    router_node)     # small model inside
+g.add_node("worker",    worker_agent)    # mid model + tools
+g.add_node("guardrail", guardrail_node)  # small model
+g.add_edge(START, "router")
+g.add_edge("router", "worker")
+g.add_edge("worker", "guardrail")
+g.add_edge("guardrail", END)
+
+g.compile().invoke(state,
+    config={"recursion_limit": 8})</code>
+        </div>
+      </details>
+    </div>
+
+    <div class="pview" id="pv-adk">
+      <p class="fwline">Google’s Agent Development Kit: LLM agents composed under deterministic workflow agents (<a href="https://google.github.io/adk-docs/">docs</a>). Translation key: a <b>stage</b> = a sub-agent · the worker stage’s <b>turns</b> = <code class="inl">LoopAgent(max_iterations=…)</code> · the shared <b>memory</b> = <code class="inl">session.state</code> relayed via <code class="inl">output_key</code>.</p>
+      <details class="acc" open>
+        <summary><b>Single agent — stages off</b><span class="hsum">one LlmAgent · one model</span></summary>
+        <div class="body">
+          <p>Everything — classification, tool calls, self-check — happens inside one agent at one tier.</p>
+          <code class="blk">agent = LlmAgent(
+    name="support",
+    model=mid,                          # one tier for every job
+    tools=[order_lookup, refund_api],
+    instruction="Resolve the ticket.")</code>
+        </div>
+      </details>
+      <details class="acc">
+        <summary><b>Multi-agent — per-role stages</b><span class="hsum">SequentialAgent · model per sub-agent</span></summary>
+        <div class="body">
+          <p>The three-agent worked example, literally — each role its own <code class="inl">model=</code>, the loop bounded, early exit via escalation or <code class="inl">exit_loop</code>.</p>
+          <code class="blk">router    = LlmAgent(name="router",
+              model=small, instruction="Classify intent.")
+worker    = LlmAgent(name="worker",
+              model=mid, tools=[order_lookup, refund_api])
+guardrail = LlmAgent(name="guardrail",
+              model=small, instruction="Policy-check reply.")
+
+pipeline  = SequentialAgent(sub_agents=[
+    router,
+    LoopAgent(sub_agents=[worker],
+              max_iterations=6),        # the worker stage’s turns
+    guardrail])</code>
+        </div>
+      </details>
+    </div>
+
+    <div class="pview" id="pv-oai">
+      <p class="fwline">OpenAI’s Agents SDK: Agents with tools, connected by handoffs, driven by a Runner (<a href="https://openai.github.io/openai-agents-python/">docs</a>). Translation key: a <b>turn</b> = one run-loop step · a <b>stage</b> = an Agent · <b>bound the loop</b> = <code class="inl">max_turns</code>.</p>
+      <details class="acc" open>
+        <summary><b>Single agent — stages off</b><span class="hsum">Agent · max_turns</span></summary>
+        <div class="body">
+          <code class="blk">agent = Agent(name="support", model=mid,
+    tools=[order_lookup, refund_api])
+
+Runner.run(agent, ticket, max_turns=8)  # bound the loop</code>
+        </div>
+      </details>
+      <details class="acc">
+        <summary><b>Multi-agent — per-role stages</b><span class="hsum">per-agent model · handoffs</span></summary>
+        <div class="body">
+          <p>Each Agent sets its own <code class="inl">model</code>; the relay is a chain of handoffs (guardrail logic can also live in the SDK’s output-guardrail hooks).</p>
+          <code class="blk">worker    = Agent(name="worker",    model=mid,
+                  tools=[order_lookup, refund_api])
+guardrail = Agent(name="guardrail", model=small,
+                  instructions="Policy-check the reply.")
+router    = Agent(name="router",    model=small,
+                  instructions="Classify, then hand off.",
+                  handoffs=[worker])
+worker.handoffs = [guardrail]</code>
+        </div>
+      </details>
+    </div>
+
+    <div class="pview" id="pv-crew">
+      <p class="fwline">CrewAI: role-based crews of agents executing tasks under a process (<a href="https://docs.crewai.com/">docs</a>). Translation key: a <b>stage</b> = an Agent + its Task · per-stage model = per-agent <code class="inl">llm=</code> · <b>bound the loop</b> = <code class="inl">max_iter</code>.</p>
+      <details class="acc" open>
+        <summary><b>Single agent — stages off</b><span class="hsum">one Agent · max_iter</span></summary>
+        <div class="body">
+          <code class="blk">support = Agent(role="Support agent", llm=mid,
+    max_iter=8,                         # bound the loop
+    tools=[order_lookup, refund_api])
+
+Crew(agents=[support],
+     tasks=[resolve_ticket]).kickoff()</code>
+        </div>
+      </details>
+      <details class="acc">
+        <summary><b>Multi-agent — per-role stages</b><span class="hsum">Crew · llm per agent · sequential process</span></summary>
+        <div class="body">
+          <code class="blk">router    = Agent(role="Router",    llm=small)
+worker    = Agent(role="Worker",    llm=mid,
+                  tools=[order_lookup, refund_api])
+guardrail = Agent(role="Guardrail", llm=small)
+
+Crew(agents=[router, worker, guardrail],
+     tasks=[classify, resolve, check],
+     process=Process.sequential).kickoff()</code>
+        </div>
+      </details>
+    </div>
+
+    <details class="acc" style="margin-top:16px">
+      <summary><b>Calibrate from real traces</b><span class="hsum">code → calculator</span></summary>
+      <div class="body">
+        <p>Close the loop the other way: run your framework with tracing on (LangSmith, ADK’s dev UI, OpenAI traces), read <b>turns per run</b>, <b>input/output tokens per role</b> and <b>retry rate</b> from the trace, and type them into the calculator — stage rows for multi-agent, sliders for single. The estimate then reflects <em>your</em> system, not these defaults; the trace’s billed token counts are the ground truth this simulator approximates.</p>
+      </div>
+    </details>
+    <p class="disclaimer" style="margin-top:12px"><strong>Honesty note.</strong> This mapping shows the concepts are implementable, not that the numbers transfer: frameworks add their own token overhead (system scaffolding, handoff messages, state serialization) that this calculator does not model. Measure with traces; treat the mapping as the bridge, not the bill.</p>
+  </section>
+
+  <section class="src">
+    <h2>Every reduction lever has a framework handle</h2>
+    <p class="sub">Same names, groups and order as panel 4 of the calculator. Expand a lever to see how each framework — or the model provider underneath — implements it.</p>
+
+    <div class="lever-group">Spend fewer tokens</div>
+    <details class="acc">
+      <summary><b>Right-size the model</b><span class="hsum">per-agent model= · stages mode, priced</span></summary>
+      <div class="body">
+        <div class="kv"><span>all frameworks</span><span>The per-node / per-agent <code>model=</code> (CrewAI: <code>llm=</code>) parameter — stages mode <em>is</em> this parameter, priced. In single-agent mode this lever approximates what a router node makes explicit.</span></div>
+      </div>
+    </details>
+    <details class="acc">
+      <summary><b>Trim the reasoning budget</b><span class="hsum">per-agent reasoning controls</span></summary>
+      <div class="body">
+        <div class="kv"><span>provider layer</span><span>Anthropic extended-thinking token budgets · OpenAI <code>reasoning_effort</code> · Gemini thinking budgets — all settable per agent.</span></div>
+        <div class="kv"><span>with stages</span><span>Spend reasoning only in the stage that needs it — the worked example budgets it to the worker’s refund decisions.</span></div>
+      </div>
+    </details>
+    <details class="acc">
+      <summary><b>Memory layer: summarise &amp; retrieve</b><span class="hsum">trim / summarize / shared state</span></summary>
+      <div class="body">
+        <div class="kv"><span>LangGraph / LangChain</span><span><code>trim_messages</code> caps carried history; LangMem’s <code>SummarizationNode</code> replaces overflow with a summary message.</span></div>
+        <div class="kv"><span>Google ADK</span><span>Relay distilled state between agents via <code>session.state</code> + <code>output_key</code> instead of the raw transcript; Memory services for long-term recall.</span></div>
+        <div class="kv"><span>pattern</span><span>Provider-agnostic context engineering: carry a compact summary + the relevant retrieved slice, not the whole transcript.</span></div>
+      </div>
+    </details>
+
+    <div class="lever-group">Reuse instead of recompute</div>
+    <details class="acc">
+      <summary><b>Cache the stable prefix</b><span class="hsum">provider caching · works through any framework</span></summary>
+      <div class="body">
+        <div class="kv"><span>Anthropic</span><span>Prompt caching via <code>cache_control</code> breakpoints on the stable prefix.</span></div>
+        <div class="kv"><span>OpenAI</span><span>Automatic prompt caching on repeated prefixes.</span></div>
+        <div class="kv"><span>Google</span><span>Gemini context caching for reused context blocks.</span></div>
+        <div class="kv"><span>the one rule</span><span>Keep the system prompt + tool schemas byte-identical at the <em>front</em> of every request — exactly what this calculator’s cache lever assumes.</span></div>
+      </div>
+    </details>
+
+    <div class="lever-group">Take fewer steps</div>
+    <details class="acc">
+      <summary><b>Bound the loop</b><span class="hsum">recursion_limit · max_iterations · max_turns · max_iter</span></summary>
+      <div class="body">
+        <div class="kv"><span>LangGraph</span><span><code>recursion_limit</code> on <code>invoke()</code> caps graph steps.</span></div>
+        <div class="kv"><span>Google ADK</span><span><code>LoopAgent(max_iterations=…)</code>; early exit by a sub-agent signalling escalation or calling <code>exit_loop</code>.</span></div>
+        <div class="kv"><span>OpenAI Agents SDK</span><span><code>max_turns</code> on the run.</span></div>
+        <div class="kv"><span>CrewAI</span><span><code>max_iter</code> per agent.</span></div>
+        <div class="kv"><span>the design half</span><span>“Exit when the goal is met” is the stop condition / escalation — the cap is the safety net, not the plan.</span></div>
+      </div>
+    </details>
+    <details class="acc">
+      <summary><b>Harden against failures</b><span class="hsum">tool error handling · node retries</span></summary>
+      <div class="body">
+        <div class="kv"><span>LangGraph</span><span>ToolNode error surfacing and node-level retry policies keep one failure from re-running the run.</span></div>
+        <div class="kv"><span>Google ADK</span><span>Callbacks around tool execution for validation and recovery.</span></div>
+        <div class="kv"><span>the design half</span><span>Idempotent tools + narrow retries, so a flaky API never replays the whole transcript.</span></div>
+      </div>
+    </details>
+
+    <div class="lever-group">Place the work well</div>
+    <details class="acc">
+      <summary><b>Batch non-urgent work</b><span class="hsum">provider batch tiers · ~50%</span></summary>
+      <div class="body">
+        <div class="kv"><span>provider layer</span><span>Anthropic Message Batches and the OpenAI Batch API price asynchronous workloads at ~50% — this lever’s default — callable from any framework for non-interactive jobs.</span></div>
+      </div>
+    </details>
+    <details class="acc">
+      <summary><b>Carbon-aware placement</b><span class="hsum">region choice · scheduling</span></summary>
+      <div class="body">
+        <div class="kv"><span>deployment layer</span><span>A deployment decision, not a code decision: choose low-carbon cloud regions for the serving endpoint, and schedule flexible batch work to cleaner grid hours — see the methodology’s carbon-aware sources.</span></div>
+      </div>
+    </details>
+  </section>
+</div>
+</div><!-- /view-practice -->
+
+<div id="view-extend" class="view">
+<div class="wrap foot">
+  <section class="extend">
+    <h2>Extend this reference implementation</h2>
+    <p class="sub">This is one worked example, meant to be adapted. Everything the engine reads — models, grids, workload presets, reduction levers, assumptions — lives in a single <code class="inl">DATA</code> block at the top of the page's script, each entry carrying its source. Organizations are encouraged to fork it and swap in their own data; the UI, the maths and the waterfall recalculate automatically.</p>
+    <div class="cols">
+      <div class="col">
+        <h3><span class="n">+</span>Add your own models</h3>
+        <p>Append your measured or contracted numbers to <span style="font-family:var(--mono)">DATA.models</span> — a tile appears automatically.</p>
+        <code>{ id:"ours", nm:"Acme in-house 8B",
+  inPrice:0.30, outPrice:1.2,   // $/M tok
+  eIn:0.05, eOut:0.25,          // Wh/1k tok
+  src:"internal telemetry, 2026-Q2" }</code>
+      </div>
+      <div class="col">
+        <h3><span class="n">+</span>Add your region &amp; presets</h3>
+        <p>Add your grid's intensity to <span style="font-family:var(--mono)">DATA.grids</span> and your real workloads to <span style="font-family:var(--mono)">DATA.presets</span> so colleagues explore <em>your</em> systems, not generic ones.</p>
+        <code>{ id:"in-south", nm:"India — South",
+  g:632, src:"Electricity Maps, 2026" }</code>
+      </div>
+      <div class="col">
+        <h3><span class="n">+</span>Add your own levers</h3>
+        <p>A lever is a name, a note and a function that transforms the workload — the waterfall re-simulates it honestly alongside the rest.</p>
+        <code>{ id:"distill", group:"Spend fewer tokens",
+  nm:"Distilled house model", st:"−40% energy",
+  note:"Fine-tuned small model for tier-1 asks.",
+  apply:p=>{ p.routeFraction=.8; } }</code>
+      </div>
+    </div>
+    <p class="disclaimer" style="margin-top:14px">If you build a variant — a different workload class, a measured back-end, an alternative methodology — consider <a href="https://github.com/Green-Software-Foundation/reference-implementations">contributing it back to the GSF Reference Implementations repository</a>. Multiple valid approaches to the same problem are a feature of the collection — stages mode (role-based model assignment with a distinct token profile per role) shipped in this version; the most-wanted contributions now are per-stage caching economics and a measured, instrumented back-end, as flagged in the methodology roadmap.</p>
+  </section>
+</div>
+</div><!-- /view-extend -->
+
+<div id="view-method" class="view">
+<div class="wrap foot">
+  <section class="method">
+    <h2>How it calculates</h2>
+    <code>input(t) = system + task + min(history, cap)&nbsp;&nbsp;· transcript re-processed each turn<br>
+stages (optional) = the run is a sequence of roles, each with its own model &amp; per-turn profile; the transcript flows through all of them<br>
+cost/run = Σ (in·P<sub>in</sub> + out·P<sub>out</sub>) / 10⁶ &nbsp;×&nbsp;(1+retry)&nbsp;×&nbsp;batch<br>
+kWh = Σ (in·E<sub>in</sub> + out·E<sub>out</sub>) / 10⁶ &nbsp;×&nbsp;(1+retry)&nbsp;×&nbsp;PUE<br>
+gCO₂e = E·I + M &nbsp;=&nbsp; (kWh × grid intensity × carbon-aware) &nbsp;+&nbsp; embodied<br>
+M (embodied) = accelerator Wh × [ 1,200 kg / (5 y × 8,760 h × 700 W) ] ≈ 0.039 g/Wh &nbsp;&nbsp;·&nbsp;&nbsp;water = kWh × 1.8&nbsp;L</code>
+    <p>The calculation follows the Software Carbon Intensity shape — SCI = (E·I&nbsp;+&nbsp;M)/R, per the <a style="color:#9CCFA9" href="https://sci-for-ai.greensoftware.foundation/">SCI for AI specification</a> (extending ISO/IEC 21031:2024) — with the functional unit R&nbsp;=&nbsp;1 agent run. Both terms of the SCI numerator are modelled: <strong style="color:#F3F5F0">E·I</strong>, the operational emissions of the electricity consumed, and <strong style="color:#F3F5F0">M</strong>, the embodied emissions of manufacturing the hardware, amortized over the accelerator time a run occupies. The split matters for decision-making: moving to a cleaner grid or scheduling carbon-aware shrinks E·I but not M — the only way to shrink M is to use less compute. On a low-carbon grid, embodied emissions can become the dominant share. </p>
+    <p style="margin-top:8px"><strong style="color:#F3F5F0">Default behaviour, and the departures modelled.</strong> The baseline models the documented default of major LLM APIs: the full conversation context is processed and billed as input tokens on every request. This holds even when the provider stores conversation state server-side — OpenAI's documentation states that even when using previous_response_id, all previous input tokens in the chain are billed as input tokens; stored state changes <em>where the transcript lives</em>, not how many tokens are processed. The departures from that default are modelled explicitly as levers, so they are a visible choice rather than a hidden assumption: <em>prompt caching</em> (re-processed prefixes discounted — default 10% of input price and energy, Anthropic-style cache reads — adjustable via the cache-read slider in Fine-tune, since other providers discount differently) and a <em>memory layer</em> (summarisation / retrieval, which reduces the tokens carried at all). Provider billing evolves — verify against your provider's current documentation.</p>
+    <p style="margin-top:8px"><strong style="color:#F3F5F0">Known limitations &amp; roadmap.</strong> Stated so they are choices, not surprises. (1)&nbsp;<em>Per-role stages:</em> stages mode assigns each role (router, loop, guardrail…) its own model tier and per-turn token profile, with the transcript flowing through all of them; the single-profile sliders remain the default for simplicity, and the right-size lever approximates routing <em>within</em> a stage. What is still shared across stages: the cache-read rate and the memory-layer cap — per-stage caching economics are the top remaining roadmap item. (2)&nbsp;<em>Caching:</em> modelled as a flat read-rate discount; cache-write premiums, TTL and storage fees are not modelled. (3)&nbsp;<em>Embodied M:</em> amortized at rated load by default; the utilization slider lets you explore how under-utilized fleets (utilization fluctuates widely in real inference deployments) inflate per-token embodied carbon. (4)&nbsp;<em>Scope:</em> water uses a single indicative factor; training, networking and end-user-device emissions are outside the boundary. Feedback that sharpens these is welcome via the GSF repository.</p>
+    <p style="margin-top:8px"><strong style="color:#F3F5F0">What this is and isn't.</strong> This tool <em>simulates</em> from calibrated defaults — it does not instrument real API calls, and estimation proxies of this kind have been reported to undercount measured energy by 2–6×. Use it to build intuition and compare scenarios, not to report numbers. For a measured, instrumented application of SCI for AI, see the GSF <a style="color:#9CCFA9" href="https://github.com/Green-Software-Foundation/reference-implementations/tree/main/specifications/sci-for-ai/gsf/llm-inference">sci-for-ai reference implementation</a>, which obtains per-call energy from provider SDKs and replayable recorded fixtures.</p>
+  </section>
+
+  <section class="src">
+    <h2>Sources behind the defaults</h2>
+    <p class="sub">Each constant in the code carries the reference it is calibrated against. Vintage: 2026-Q1.</p>
+    <ul>
+      <li><span class="what">short-query energy<br>0.24–1 Wh</span><span>Jegham et al. 2025, <em>How Hungry is AI?</em> — 30-model benchmark, ~0.42&nbsp;Wh for a short GPT-4o query (<a href="https://arxiv.org/abs/2505.09598">arXiv:2505.09598</a>) · Google 2025 — production-measured median Gemini text prompt 0.24&nbsp;Wh, 0.03&nbsp;gCO₂e, 0.26&nbsp;mL water (<a href="https://arxiv.org/abs/2508.15734">arXiv:2508.15734</a>) · OpenAI 2025 — ~0.34&nbsp;Wh average query (Altman, <a href="https://blog.samaltman.com/the-gentle-singularity">The Gentle Singularity</a>)</span></li>
+      <li><span class="what">reasoning prompts<br>up to ~33 Wh</span><span>Jegham et al. 2025 — the most energy-intensive reasoning models (o3, DeepSeek-R1) exceeded ~29–33&nbsp;Wh per long prompt, over 65× the most efficient systems. The "reasoning-heavy" tier is calibrated against this ceiling.</span></li>
+      <li><span class="what">API pricing bands</span><span>CloudZero and PE Collective 2026 LLM API pricing surveys — roughly $0.10/M (budget) to $30/M (frontier reasoning) input tokens. <a href="https://www.cloudzero.com/blog/llm-api-pricing-comparison/">cloudzero.com</a></span></li>
+      <li><span class="what">grid intensity<br>50–650 gCO₂e/kWh</span><span>Ember Global Electricity Review · Electricity Maps · <a href="https://www.iea.org/reports/electricity-2024">IEA Electricity 2024</a> — world average ~450–480; hydro/nuclear regions 20–80; coal-heavy grids 600–900.</span></li>
+      <li><span class="what">PUE 1.2 · water 1.8 L/kWh</span><span>Modern hyperscale operators report PUE ~1.1–1.2 (sustainability reports). Water is a combined on-site cooling + generation figure; it varies enormously by site — indicative only.</span></li>
+      <li><span class="what">carbon-aware scheduling</span><span>Özcan et al. 2025 model LLM-inference emissions under real grid conditions and explore carbon-aware scheduling via energy-system co-simulation (<a href="https://arxiv.org/abs/2507.11417">arXiv:2507.11417</a>); the reported potential of time/location-shifting varies widely by region and flexibility. This demo deliberately uses a conservative 30% — adjust it to your own grid's data.</span></li>
+      <li><span class="what">measurement caveat</span><span>Estimation proxies based on FLOPs or GPU utilisation have been reported to undercount measured energy consumption by 2–6× (Fernandez et al. 2025, <a href="https://arxiv.org/abs/2504.17674">arXiv:2504.17674</a>, ACL 2025). All figures here are estimates, subject to the same class of uncertainty.</span></li>
+      <li><span class="what">caching &amp; batch pricing</span><span>Cache reads at 10% of base input price and Message Batches at −50% are <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Anthropic’s published rates</a>; the OpenAI Batch API is likewise −50%, while OpenAI’s automatic-caching read discount varies by model (50–90%). The cache-read slider defaults to the 10% figure and is adjustable; cache-<em>write</em> premiums (×1.25–×2 on Anthropic) are not modelled, which slightly flatters the cache lever.</span></li>
+      <li><span class="what">context billed<br>per request (default)</span><span>Provider documentation confirms the full conversation is billed as input on each request even with server-side state (<a href="https://developers.openai.com/api/docs/guides/conversation-state">OpenAI — Conversation state</a>). Caching discounts and memory architectures are the modelled departures; billing details vary by provider and change over time.</span></li>
+      <li><span class="what">embodied emissions<br>M ≈ 0.039 g/Wh</span><span>Reported LCAs and vendor disclosures put a data-centre AI accelerator (A100/H100 class) at roughly 1,000–1,500&nbsp;kgCO₂e embodied (Patterson et al.; <a href="https://boavizta.org/">Boavizta</a>); amortized here over 5 years at ~700&nbsp;W under load, i.e. assuming full utilization — the most favorable case; real inference fleets run lower, and per-token M scales inversely with utilization (see the Fine-tune slider). Replace with values for your hardware.</span></li>
+      <li><span class="what">framework grounding</span><span>Concept-to-code mapping (see the In practice tab) checked against <a href="https://langchain-ai.github.io/langgraph/">LangGraph docs</a> · <a href="https://google.github.io/adk-docs/">Google ADK docs</a> (LlmAgent, SequentialAgent, LoopAgent/max_iterations) · <a href="https://openai.github.io/openai-agents-python/">OpenAI Agents SDK</a> · <a href="https://docs.crewai.com/">CrewAI docs</a>, vintage 2026-Q3. Framework scaffolding overhead is not modelled.</span></li>
+      <li><span class="what">metric standard</span><span><a href="https://sci-for-ai.greensoftware.foundation/">SCI for AI</a> — the Green Software Foundation's AI extension of <a href="https://sci.greensoftware.foundation/">Software Carbon Intensity (SCI)</a>, ISO/IEC 21031:2024 · <a href="https://greensoftware.foundation/articles/introducing-gsf-reference-implementations/">GSF Reference Implementations</a>.</span></li>
+      <li><span class="what">equivalences</span><span>Smartphone charge ≈ 12&nbsp;Wh · typical passenger car ≈ 400&nbsp;gCO₂e/mile (≈&nbsp;250&nbsp;g/km) — <a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator">US EPA GHG Equivalencies Calculator</a> · LED bulb ≈ 10&nbsp;W.</span></li>
+    </ul>
+    <p class="disclaimer"><strong>Honesty note.</strong> These defaults are calibrated estimates anchored to the published measurements above — they are not measurements of any specific vendor, model or region, and this tool does not produce the definitive number for your workload. Different teams will reasonably make different choices about measurement providers, assumptions and approach; this implementation documents its choices so you can evaluate them against your own context. The value of the tool is its structure and its levers, not any single constant.</p>
+  </section>
+</div>
+</div><!-- /view-method -->
+<div class="toast" id="toast">Link copied — paste it anywhere</div>
+
+<script>
+/* =====================================================================
+   DATA — every operative number lives here. Edit freely; each entry
+   names the source it is calibrated against (full links in the page).
+   Prices: USD per 1M tokens · Energy: Wh per 1k tokens · Grid: gCO₂e/kWh
+   ===================================================================== */
+const DATA = {
+  models: [
+    { id:"small",    nm:"Small / fast",     inPrice:0.15, outPrice:0.6,  eIn:0.04, eOut:0.2, src:"~0.1–0.3 Wh short query (low end of the published short-query band); pricing: CloudZero 2026" },
+    { id:"mid",      nm:"Mid / workhorse",  inPrice:2.5,  outPrice:15,   eIn:0.2,  eOut:1.0, src:"~0.4 Wh short query (Jegham 2025: 0.42 Wh; Google 2025: 0.24 Wh)" },
+    { id:"frontier", nm:"Frontier",         inPrice:5,    outPrice:25,   eIn:0.5,  eOut:2.5, src:"top of the published sub-1 Wh short-query band; pricing: CloudZero 2026" },
+    { id:"reason",   nm:"Reasoning-heavy",  inPrice:15,   outPrice:60,   eIn:1.0,  eOut:5.0, src:"long prompts approach ~33 Wh (Jegham 2025)" },
+  ],
+  grids: [
+    { id:"low",    nm:"Low-carbon",     g:50,  src:"hydro/nuclear regions, 20–80 (Electricity Maps / Ember)" },
+    { id:"clean",  nm:"Cleaner grid",   g:230, src:"renewables-heavy mixed grids (Ember)" },
+    { id:"global", nm:"Global average", g:450, src:"~450–480 world avg (Ember; IEA 2024)" },
+    { id:"coal",   nm:"Carbon-heavy",   g:650, src:"coal-dependent grids, 600–900 (Ember)" },
+  ],
+  pue: 1.2, waterLPerKwh: 1.8, cacheReadRate: 0.10, daysPerMonth: 22,
+  // Embodied (hardware manufacturing) emissions, amortized over accelerator life.
+  // ~1,000-1,500 kgCO2e per data-centre AI accelerator across reported LCAs
+  // (Patterson et al.; Boavizta), ~5y amortization, ~700W under load
+  // => grams per Wh of accelerator energy = kg*1000 / (years*8760h*W)
+  embodied: { kgPerGpu:1200, lifespanYears:5, gpuPowerW:700 },
+  eq: { phoneWh:12, carGPerKm:250, ledW:10 },
+  presets: [
+    { id:"chat",  nm:"Support chatbot", model:"small",    turns:4,  sys:1000, out:250, reason:0,   tool:0,    retry:0.05, runs:2000 },
+    { id:"rag",   nm:"RAG assistant",   model:"mid",      turns:3,  sys:1500, out:350, reason:0,   tool:1500, retry:0.08, runs:1000 },
+    { id:"code",  nm:"Coding agent",    model:"mid",      turns:12, sys:2500, out:300, reason:400, tool:700,  retry:0.12, runs:500  },
+    { id:"deep",  nm:"Deep research",   model:"reason",   turns:25, sys:2900, out:400, reason:800, tool:1200, retry:0.15, runs:100  },
+  ],
+  levers: [
+    { id:"rightSize", group:"Spend fewer tokens", nm:"Right-size the model", st:"route 50% of turns to the small tier",
+      note:"Easy turns don't need the big model.", apply:p=>{ p.routeFraction=.5; } },
+    { id:"trim", group:"Spend fewer tokens", nm:"Trim the reasoning budget", st:"−60% reasoning tokens",
+      note:"Spend reasoning only where it changes the answer.", apply:p=>{ p.reasonPerTurn=Math.round(p.reasonPerTurn*.4); if(p.stages)p.stages=p.stages.map(x=>({...x,reason:Math.round(x.reason*.4)})); } },
+    { id:"prune", group:"Spend fewer tokens", nm:"Memory layer: summarise & retrieve", st:"carry ≤3 turns of history",
+      note:"Keep a compact shared memory and send only the relevant slice, instead of carrying the whole transcript in context.", apply:p=>{ p.contextCap=3*(p.outPerTurn+p.toolPerTurn); } },
+    { id:"cache", group:"Reuse instead of recompute", nm:"Cache the stable prefix", st:"50% of input at 10% price",
+      note:"Pay full price for the system prompt once, not every turn.", apply:p=>{ p.cacheFraction=.5; } },
+    { id:"bound", group:"Take fewer steps", nm:"Bound the loop", st:"−25% turns",
+      note:"Cap the turns; exit when the goal is met.", apply:p=>{ p.turns=Math.max(1,Math.round(p.turns*.75)); if(p.stages)p.stages=p.stages.map(x=>({...x,turns:x.turns<=1?x.turns:Math.max(1,Math.round(x.turns*.75))})); } },
+    { id:"harden", group:"Take fewer steps", nm:"Harden against failures", st:"retries → 0",
+      note:"Fewer exceptions means fewer wasted re-runs.", apply:p=>{ p.retryRate=0; } },
+    { id:"batch", group:"Place the work well", nm:"Batch non-urgent work", st:"−50% price", cost:true,
+      note:"Async batch tiers halve the bill for non-interactive jobs.", apply:p=>{ p.batchFactor=.5; } },
+    { id:"carbon", group:"Place the work well", nm:"Carbon-aware placement", st:"cleaner grid + −30% scheduling", carbon:true,
+      note:"Run flexible work where and when the grid is cleanest; reported potential varies widely by region, so a conservative 30% is used here.",
+      apply:p=>{ const cleaner=DATA.grids.filter(g=>g.g<p.gridG); if(cleaner.length)p.gridG=cleaner[cleaner.length-1].g; p.carbonAware=.7; } },
+  ],
+};
+
+/* ============================ ENGINE ================================
+   Same loop-spine model as the full calculator, single loop:
+   context grows each turn by (output + tool results); the transcript
+   is re-processed every turn (resent by the client or replayed from provider state), capped by contextCap when the memory lever is on. */
+function simulate(p){
+  const small = DATA.models[0];
+  const cap = p.contextCap>0 ? p.contextCap : Infinity;
+  // one uniform stage by default; stages mode supplies its own sequence of roles
+  const stages = (p.stages && p.stages.length) ? p.stages
+    : [{ role:"", model:p.model, turns:p.turns, out:p.outPerTurn, reason:p.reasonPerTurn, tool:p.toolPerTurn }];
+  let cost=0, wh=0, inTok=0, outTok=0, history=0, t=0;
+  const perTurn=[], perTurnRole=[], perStage=[];
+  for(const st of stages){
+    const m = DATA.models.find(x=>x.id===st.model) || DATA.models[1];
+    let sC=0, sW=0, sIn=0, sOut=0;
+    for(let k=1;k<=st.turns;k++){
+      t++;
+      const carried=Math.min(history,cap);
+      const tin=p.sysTokens+carried, tout=st.out+st.reason;
+      perTurn.push(tin); perTurnRole.push(st.role||"");
+      const useSmall = p.routeFraction>0 && (Math.floor(t*p.routeFraction)>Math.floor((t-1)*p.routeFraction));
+      const mm = useSmall? small : m;
+      const cached=tin*(p.cacheFraction||0), fresh=tin-cached, r=(p.cacheRate!=null?p.cacheRate:DATA.cacheReadRate);
+      const c = (fresh*mm.inPrice + cached*mm.inPrice*r + tout*mm.outPrice)/1e6;
+      const e = (fresh*mm.eIn    + cached*mm.eIn*r    + tout*mm.eOut)/1000;
+      cost+=c; wh+=e; sC+=c; sW+=e;
+      inTok+=tin; outTok+=tout; sIn+=tin; sOut+=tout;
+      history += st.out + st.tool;
+    }
+    perStage.push({ role:st.role||"run", model:m.nm, turns:st.turns, inTok:sIn, outTok:sOut, cost:sC, wh:sW });
+  }
+  const retry=1+(p.retryRate||0);
+  cost = cost*retry*(p.batchFactor||1);
+  const computeWh = wh*retry;                    // accelerator energy
+  const facilityWh = computeWh*DATA.pue;         // incl. data-centre overhead
+  const kwh = facilityWh/1000;
+  const e = DATA.embodied;
+  const embGPerWh = e.kgPerGpu*1000/(e.lifespanYears*8760*e.gpuPowerW);
+  const gOp  = kwh*p.gridG*(p.carbonAware||1);   // operational: E·I, grid- and time-dependent
+  const gEmb = computeWh*embGPerWh/(p.util||1);  // embodied: M, follows accelerator time; under-utilization inflates it
+  return {
+    cost, wh:facilityWh, g:gOp+gEmb, gOp, gEmb,
+    waterL: kwh*DATA.waterLPerKwh, perTurn, perTurnRole, perStage,
+    inTok:Math.round(inTok*retry), outTok:Math.round(outTok*retry),
+  };
+}
+const monthly = (r,p)=>({ cost:r.cost*p.runs*DATA.daysPerMonth, kwh:r.wh*p.runs*DATA.daysPerMonth/1000,
+                          kg:r.g*p.runs*DATA.daysPerMonth/1000, waterL:r.waterL*p.runs*DATA.daysPerMonth });
+
+/* Waterfall: apply enabled levers one at a time, re-simulating after each,
+   so each lever's saving is measured on top of the previous ones. */
+function waterfall(base){
+  const steps=[]; let p={...base};
+  let prev=simulate(p);
+  const baseline=prev;
+  for(const lv of DATA.levers){
+    if(!state.levers[lv.id]) continue;
+    lv.apply(p);
+    const now=simulate(p);
+    steps.push({ lv, dCost:prev.cost-now.cost, dG:prev.g-now.g });
+    prev=now;
+  }
+  return { baseline, final:prev, steps, params:p };
+}
+
+/* ============================ STATE / UI ============================ */
+// runs-per-day slider is logarithmic: 1 → 1,000,000
+const runsFromSlider = v => Math.round(Math.pow(10, v/10));
+const sliderFromRuns = r => Math.round(Math.log10(Math.max(1,r))*10);
+
+const state = {
+  model:"mid", grid:"global", turns:12, sys:2500, out:300, reason:400, tool:700,
+  retry:12, runs:500, crate:10, util:100, preset:"code", levers:{},
+  stagesOn:false,
+  stages:[
+    { role:"Router",     model:"small", turns:1, out:60,  reason:0,   tool:0    },
+    { role:"Agent loop", model:"mid",   turns:6, out:250, reason:200, tool:1000 },
+    { role:"Guardrail",  model:"small", turns:1, out:100, reason:0,   tool:0    },
+  ],
+};
+const stageTurns = ()=>state.stages.reduce((a,x)=>a+x.turns,0);
+DATA.levers.forEach(l=>state.levers[l.id]=false);
+
+const $=id=>document.getElementById(id);
+const fmt$ = x => x>=100? "$"+Math.round(x).toLocaleString() : x>=1? "$"+x.toFixed(2) : x>=0.01? "$"+x.toFixed(3) : "$"+x.toFixed(4);
+const fmtN = (x,u)=>{ if(u==="Wh") return x>=1e6? (x/1e6).toFixed(1)+" MWh" : x>=1000? (x/1000).toFixed(1)+" kWh" : x.toFixed(x<10?2:1)+" Wh";
+  if(u==="g") return x>=1e6? (x/1e6).toFixed(1)+" t" : x>=1000? (x/1000).toFixed(1)+" kg" : x.toFixed(x<10?2:1)+" g";
+  if(u==="kg") return x>=1000? (x/1000).toFixed(1)+" t CO₂e" : x.toFixed(x<10?2:1)+" kg CO₂e";
+  if(u==="L") return x>=1e6? (x/1e6).toFixed(1)+" ML" : x>=1000? (x/1000).toFixed(1)+" kL" : x.toFixed(x<1?2:1)+" L";
+  if(u==="kWh") return x>=1e6? (x/1e6).toFixed(1)+" GWh" : x>=1000? (x/1000).toFixed(1)+" MWh" : x.toFixed(x<10?2:1)+" kWh";
+  return x.toLocaleString(); };
+const fmtK = x => x>=1e6? (x/1e6).toFixed(1)+"M" : x>=1000? (x/1000).toFixed(x<10000?1:0)+"k" : ""+x;
+
+function params(){
+  const p = { model:state.model, gridG:DATA.grids.find(g=>g.id===state.grid).g,
+    turns:state.turns, sysTokens:state.sys, outPerTurn:state.out, reasonPerTurn:state.reason,
+    toolPerTurn:state.tool, retryRate:state.retry/100, runs:state.runs,
+    cacheRate:state.crate/100, util:state.util/100,
+    contextCap:0, cacheFraction:0, routeFraction:0, batchFactor:1, carbonAware:1 };
+  if(state.stagesOn && state.stages.length){
+    p.stages = state.stages.map(x=>({ ...x }));
+    // the "main" stage (most turns) supplies the profile lever maths read (e.g. the memory cap)
+    const main = p.stages.reduce((a,b)=>b.turns>=a.turns?b:a);
+    p.turns=stageTurns(); p.model=main.model;
+    p.outPerTurn=main.out; p.reasonPerTurn=main.reason; p.toolPerTurn=main.tool;
+  }
+  return p;
+}
+
+/* ---- build option groups ---- */
+function buildOpts(el, items, key, render){
+  el.innerHTML="";
+  items.forEach(it=>{
+    const b=document.createElement("button");
+    b.className="opt"; b.type="button"; b.setAttribute("aria-pressed", state[key]===it.id);
+    b.innerHTML=render(it);
+    b.onclick=()=>{ state[key]=it.id; buildOpts(el,items,key,render); update(); };
+    el.appendChild(b);
+  });
+}
+function buildModels(){ buildOpts($("models"), DATA.models, "model",
+  m=>`<div class="nm">${m.nm}</div><div class="meta">$${m.inPrice} / $${m.outPrice} per M tok<br>${m.eIn} / ${m.eOut} Wh per 1k tok</div>`); }
+function buildGrids(){ buildOpts($("grids"), DATA.grids, "grid",
+  g=>`<div class="nm">${g.nm}</div><div class="meta">${g.g} gCO₂e/kWh<br>${g.src.split("(")[0].trim()}</div>`); }
+
+function buildPresets(){
+  const el=$("presets"); el.innerHTML="";
+  DATA.presets.forEach(pr=>{
+    const b=document.createElement("button");
+    b.className="chip"; b.type="button"; b.textContent=pr.nm;
+    b.setAttribute("aria-pressed", state.preset===pr.id);
+    b.onclick=()=>{ state.preset=pr.id; state.model=pr.model; state.turns=pr.turns; state.sys=pr.sys;
+      state.out=pr.out; state.reason=pr.reason; state.tool=pr.tool; state.retry=Math.round(pr.retry*100);
+      state.runs=pr.runs; state.stagesOn=false; buildStages(); syncSliders(); buildModels(); buildPresets(); update(); };
+    el.appendChild(b);
+  });
+}
+
+/* ---- per-role stages editor ---- */
+function buildStages(){
+  $("stagesOn").checked = state.stagesOn;
+  $("stages").hidden = !state.stagesOn;
+  $("models").style.opacity = state.stagesOn? .35 : 1;
+  $("models").style.pointerEvents = state.stagesOn? "none" : "auto";
+  $("models").setAttribute("aria-disabled", state.stagesOn? "true":"false");
+  if(!state.stagesOn) return;
+  const el=$("stg-rows"); el.innerHTML="";
+  state.stages.forEach((st,i)=>{
+    const row=document.createElement("div"); row.className="stg-row";
+    row.innerHTML=`
+      <label>role <input class="stg-role" aria-label="Stage ${i+1} role"></label>
+      <label>model <select class="stg-model" aria-label="Stage ${i+1} model">${DATA.models.map(m=>`<option value="${m.id}">${m.nm}</option>`).join("")}</select></label>
+      <label>turns <input type="number" class="stg-turns" min="1" max="40" step="1"></label>
+      <label>out/turn <input type="number" class="stg-out" min="0" max="4000" step="50"></label>
+      <label>reason <input type="number" class="stg-reason" min="0" max="4000" step="50"></label>
+      <label>tool <input type="number" class="stg-tool" min="0" max="4000" step="50"></label>
+      <button class="stg-x" type="button" aria-label="Remove stage ${i+1}" ${state.stages.length<=1?"disabled":""}>×</button>`;
+    const q=c=>row.querySelector(c);
+    q(".stg-role").value=st.role; q(".stg-model").value=st.model;
+    q(".stg-turns").value=st.turns; q(".stg-out").value=st.out;
+    q(".stg-reason").value=st.reason; q(".stg-tool").value=st.tool;
+    q(".stg-role").addEventListener("input",e=>{ st.role=e.target.value; update(); });
+    q(".stg-model").onchange=e=>{ st.model=e.target.value; update(); };
+    const num=(c,key,min)=>q(c).addEventListener("input",e=>{
+      st[key]=Math.max(min,Math.round(+e.target.value||0)); stgSum(); syncSliders(); update(); });
+    num(".stg-turns","turns",1); num(".stg-out","out",0); num(".stg-reason","reason",0); num(".stg-tool","tool",0);
+    q(".stg-x").onclick=()=>{ state.stages.splice(i,1); buildStages(); stgSum(); syncSliders(); update(); };
+    el.appendChild(row);
+  });
+  $("stg-add").disabled = state.stages.length>=6;
+  stgSum();
+}
+function stgSum(){ if(!state.stagesOn) return;
+  $("stg-sum").textContent = state.stages.length+" stages · "+stageTurns()+" turns per run · "
+    + state.stages.map(x=>(x.role||"stage")+"→"+(DATA.models.find(m=>m.id===x.model)||{nm:"?"}).nm.split(" ")[0].toLowerCase()).join(" · ");
+}
+$("stagesOn").onchange=e=>{ state.stagesOn=e.target.checked; state.preset=null;
+  buildPresets(); buildStages(); syncSliders(); update(); };
+$("stg-add").onclick=()=>{ if(state.stages.length>=6) return;
+  state.stages.push({ role:"Stage "+(state.stages.length+1), model:"small", turns:1, out:100, reason:0, tool:0 });
+  buildStages(); syncSliders(); update(); };
+
+function buildLevers(){
+  const el=$("levers"); el.innerHTML=""; let lastGroup="";
+  DATA.levers.forEach(lv=>{
+    if(lv.group!==lastGroup){ lastGroup=lv.group;
+      const h=document.createElement("div"); h.className="lever-group"; h.textContent=lv.group; el.appendChild(h); }
+    const row=document.createElement("div"); row.className="lever";
+    row.innerHTML=`<input type="checkbox" id="lv-${lv.id}" ${state.levers[lv.id]?"checked":""}>
+      <div><label class="nm" for="lv-${lv.id}">${lv.nm}<span class="st">${lv.st}</span></label>
+      <div class="note">${lv.note}</div></div>
+      <div class="save" id="sv-${lv.id}">—</div>`;
+    row.querySelector("input").onchange=e=>{ state.levers[lv.id]=e.target.checked; update(); };
+    el.appendChild(row);
+  });
+}
+
+/* ---- sliders ---- */
+const sliders=[
+  ["turns","turns",v=>v, v=>v+" turns"],
+  ["runs","runs", runsFromSlider, v=>fmtK(v)+" / day"],
+  ["sys","sys",v=>v, v=>v.toLocaleString()+" tok"],
+  ["out","out",v=>v, v=>v.toLocaleString()+" tok"],
+  ["reason","reason",v=>v, v=>v===0?"off":v.toLocaleString()+" tok"],
+  ["tool","tool",v=>v, v=>v===0?"none":v.toLocaleString()+" tok"],
+  ["retry","retry",v=>v, v=>v+"%"],
+  ["crate","crate",v=>v, v=>v+"% of full price"],
+  ["util","util",v=>v, v=>v+"%"],
+];
+function syncSliders(){
+  sliders.forEach(([id,key,map,show])=>{
+    const el=$(id);
+    el.value = key==="runs"? sliderFromRuns(state.runs) : state[key];
+    $("v-"+id).textContent = show(state[key]);
+  });
+  // in stages mode, turn count and per-turn profiles are owned by the stage editor
+  ["turns","out","reason","tool"].forEach(id=>{
+    $(id).disabled = state.stagesOn;
+    $(id).closest(".ctl").classList.toggle("dim", state.stagesOn);
+  });
+  if(state.stagesOn) $("v-turns").textContent = stageTurns()+" turns (from stages)";
+}
+sliders.forEach(([id,key,map])=>{
+  $(id).addEventListener("input",e=>{
+    state[key]=map(+e.target.value);
+    if(key!=="runs" && state.preset){ state.preset=null; buildPresets(); }
+    syncSliders(); update();
+  });
+});
+
+/* ---- render ---- */
+const BANDS=[["A",2,"#1E7A3C"],["B",10,"#4C9A3E"],["C",30,"#9CBF2E"],["D",100,"#E8C013"],["E",300,"#E8901A"],["F",1000,"#D95F26"],["G",Infinity,"#C4342A"]];
+function buildBand(){ const el=$("band");
+  el.innerHTML=BANDS.map(b=>`<span style="background:${b[2]}" data-b="${b[0]}">${b[0]}</span>`).join(""); }
+
+function segBar(el, fracRemain, cls){
+  el.innerHTML=`<div class="wf-seg wf-remain ${cls}" style="width:${(fracRemain*100).toFixed(1)}%"></div>
+                <div class="wf-seg wf-cut" style="width:${((1-fracRemain)*100).toFixed(1)}%"></div>`;
+}
+
+function update(){
+  const p=params();
+  const wf=waterfall(p);
+  const anyLever=wf.steps.length>0;
+  const base=wf.baseline, fin=wf.final;
+  const mBase=monthly(base,p), mFin=monthly(fin,p);
+  const model=DATA.models.find(m=>m.id===state.model), grid=DATA.grids.find(g=>g.id===state.grid);
+
+  $("r-config").textContent = state.stagesOn
+    ? `${state.stages.length} stages (${state.stages.map(x=>(DATA.models.find(m=>m.id===x.model)||{nm:"?"}).nm.split(" ")[0].toLowerCase()).join(" → ")}) · ${grid.nm} grid · ${stageTurns()} turns`
+    : `${model.nm} · ${grid.nm} grid · ${state.turns} turns`;
+  const line=(id,now,was,f)=>{ $(id).innerHTML = anyLever && Math.abs(was-now)/Math.max(was,1e-9)>0.001
+      ? `<span class="was">${f(was)}</span>${f(now)}` : f(now); };
+  line("r-cost", fin.cost, base.cost, fmt$);
+  line("r-energy", fin.wh, base.wh, x=>fmtN(x,"Wh"));
+  line("r-co2", fin.g, base.g, x=>fmtN(x,"g")+" CO₂e");
+  $("r-co2split").textContent = fmtN(fin.gOp,"g")+" · "+fmtN(fin.gEmb,"g");
+  line("r-water", fin.waterL, base.waterL, x=>fmtN(x,"L"));
+  $("r-tok").textContent=`${fmtK(fin.inTok)} / ${fmtK(fin.outTok)}`;
+  $("r-scale").textContent=`· ${fmtK(state.runs)} runs/day × ${DATA.daysPerMonth} days`;
+  line("r-mcost", mFin.cost, mBase.cost, fmt$);
+  line("r-menergy", mFin.kwh, mBase.kwh, x=>fmtN(x,"kWh"));
+  line("r-mco2", mFin.kg, mBase.kg, x=>fmtN(x,"kg"));
+  line("r-mwater", mFin.waterL, mBase.waterL, x=>fmtN(x,"L"));
+
+  const sv=$("r-save");
+  if(anyLever){ sv.classList.add("show");
+    const pc=(1-mFin.cost/Math.max(mBase.cost,1e-9))*100, pg=(1-mFin.kg/Math.max(mBase.kg,1e-9))*100;
+    sv.textContent=`Levers save ${fmt$(mBase.cost-mFin.cost)} and ${fmtN(mBase.kg-mFin.kg,"kg")} a month (−${pc.toFixed(0)}% cost, −${pg.toFixed(0)}% carbon).`;
+  } else sv.classList.remove("show");
+
+  // rating band on final per-run grams
+  const g=fin.g; buildBand();
+  for(const s of $("band").children){ const b=BANDS.find(x=>x[0]===s.dataset.b);
+    if(g<=b[1] ){ s.classList.add("on"); break; } }
+
+  // equivalents (monthly, after levers)
+  $("eq-phone").innerHTML=`<b>${fmtK(Math.round(mFin.kwh*1000/DATA.eq.phoneWh))}</b> smartphone charges (energy)`;
+  $("eq-car").innerHTML=`<b>${fmtK(Math.round(mFin.kg*1000/DATA.eq.carGPerKm))}</b> km driven in an average car (CO₂e)`;
+  $("eq-led").innerHTML=`<b>${fmtK(Math.round(mFin.kwh*1000/DATA.eq.ledW))}</b> hours of a 10 W LED bulb (energy)`;
+
+  // per-lever savings + waterfall bars
+  DATA.levers.forEach(lv=>{
+    const el=$("sv-"+lv.id); const step=wf.steps.find(s=>s.lv.id===lv.id);
+    if(step){ el.classList.add("on");
+      const parts=[];
+      if(!lv.carbon) parts.push("−"+fmt$(step.dCost*state.runs*DATA.daysPerMonth)+"/mo");
+      if(!lv.cost)   parts.push("−"+fmtN(step.dG*state.runs*DATA.daysPerMonth/1000,"kg")+"/mo");
+      el.innerHTML=parts.join("<br>")||"—";
+    } else { el.classList.remove("on"); el.textContent="—"; }
+  });
+  // context-growth chart: baseline staircase, lever-reduced overlay
+  (function(){
+    const bt=base.perTurn, ft=fin.perTurn, n=Math.max(bt.length,ft.length);
+    const mx=Math.max(...bt,1);
+    let h="";
+    for(let i=0;i<n;i++){
+      const b=bt[i]||0, f=ft[i]||0;
+      const role=(base.perTurnRole&&base.perTurnRole[i])?" · "+base.perTurnRole[i]:"";
+      const tip="turn "+(i+1)+role+": "+fmtK(Math.round(b))+" tok in"+
+        (anyLever?(f>0?" → "+fmtK(Math.round(f))+" with levers":" → turn eliminated by levers"):"");
+      h+=`<div class="cg-col" title="${tip}"><div class="cg-b" style="height:${Math.max(2,b/mx*100).toFixed(1)}%"></div>`+
+         (anyLever&&f>0?`<div class="cg-r" style="height:${Math.max(2,f/mx*100*0.98).toFixed(1)}%"></div>`:"")+`</div>`;
+    }
+    $("cg").innerHTML=h;
+    $("cg-max").textContent="peak "+fmtK(Math.round(mx))+" tok re-processed";
+    $("cg-last").textContent="turn "+n;
+    $("cg-leg").hidden=!anyLever;
+  })();
+  $("waterfall").hidden=!anyLever;
+  if(anyLever){
+    segBar($("wf-cost"), Math.max(0.005,mFin.cost/Math.max(mBase.cost,1e-9)));
+    segBar($("wf-co2"),  Math.max(0.005,mFin.kg /Math.max(mBase.kg ,1e-9)),"co2");
+    $("wf-cost-cap").innerHTML=`${fmt$(mFin.cost)} of ${fmt$(mBase.cost)} · <b>−${((1-mFin.cost/Math.max(mBase.cost,1e-9))*100).toFixed(0)}%</b>`;
+    $("wf-co2-cap").innerHTML=`${fmtN(mFin.kg,"kg")} of ${fmtN(mBase.kg,"kg")} · <b>−${((1-mFin.kg/Math.max(mBase.kg,1e-9))*100).toFixed(0)}%</b>`;
+  }
+}
+
+/* ---- shareable scenario links ---- */
+function encodeScenario(){
+  const lv=DATA.levers.map(l=>state.levers[l.id]?1:0).join("");
+  const o={m:state.model,g:state.grid,t:state.turns,s:state.sys,o:state.out,r:state.reason,tl:state.tool,ry:state.retry,rn:state.runs,cr:state.crate,u:state.util,lv,
+    so:state.stagesOn?1:0, sg:state.stages.map(x=>[x.role,x.model,x.turns,x.out,x.reason,x.tool])};
+  return btoa(JSON.stringify(o)).replace(/=+$/,"");
+}
+function decodeScenario(b64){
+  try{
+    const o=JSON.parse(atob(b64));
+    Object.assign(state,{model:o.m,grid:o.g,turns:+o.t,sys:+o.s,out:+o.o,reason:+o.r,tool:+o.tl,retry:+o.ry,runs:+o.rn,crate:+(o.cr!=null?o.cr:10),util:+(o.u!=null?o.u:100),preset:null});
+    DATA.levers.forEach((l,i)=>state.levers[l.id]=o.lv[i]==="1");
+    state.stagesOn = o.so===1;
+    if(Array.isArray(o.sg) && o.sg.length)
+      state.stages = o.sg.slice(0,6).map(x=>({ role:String(x[0]||"Stage"), model:DATA.models.some(m=>m.id===x[1])?x[1]:"small",
+        turns:Math.max(1,Math.round(+x[2]||1)), out:Math.max(0,Math.round(+x[3]||0)),
+        reason:Math.max(0,Math.round(+x[4]||0)), tool:Math.max(0,Math.round(+x[5]||0)) }));
+    return true;
+  }catch(e){ return false; }
+}
+$("share").onclick=()=>{
+  const url=location.href.split("#")[0]+"#calc|"+encodeScenario();
+  const done=()=>{ const t=$("toast"); t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200); };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,()=>prompt("Copy this link:",url));
+  else prompt("Copy this link:",url);
+};
+
+/* ---- tab views ---- */
+function showView(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id==="view-"+id));
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected", t.dataset.view===id));
+  try{ history.replaceState(null,"","#"+id); }catch(e){ /* some environments block URL rewriting */ }
+  window.scrollTo({top:0});
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>showView(t.dataset.view));
+const hashParts=(location.hash||"").replace("#","").split("|");
+if(hashParts[1]) decodeScenario(hashParts[1]);
+if(["guide","practice","extend","method"].includes(hashParts[0])) showView(hashParts[0]);
+
+/* ---- worked example (step-by-step guide) ---- */
+const GUIDE = { model:"mid", grid:"global", turns:8, sys:1800, out:250, reason:200, tool:1000, retry:10, runs:800 };
+const GUIDE_STAGES = [
+  { role:"Router",     model:"small", turns:1, out:60,  reason:0,   tool:0    },
+  { role:"Agent loop", model:"mid",   turns:6, out:250, reason:200, tool:1000 },
+  { role:"Guardrail",  model:"small", turns:1, out:100, reason:0,   tool:0    },
+];
+const GUIDE_LEVERS = ["prune","cache","rightSize","bound"];
+function guideParams(){ return { model:GUIDE.model, gridG:DATA.grids.find(g=>g.id===GUIDE.grid).g,
+  turns:GUIDE.turns, sysTokens:GUIDE.sys, outPerTurn:GUIDE.out, reasonPerTurn:GUIDE.reason,
+  toolPerTurn:GUIDE.tool, retryRate:GUIDE.retry/100, runs:GUIDE.runs,
+  contextCap:0, cacheFraction:0, routeFraction:0, batchFactor:1, carbonAware:1 }; }
+function renderGuide(){
+  // baseline: the three-agent design, priced per role via stages mode
+  const gp=guideParams();
+  const sp={...gp, stages:GUIDE_STAGES.map(x=>({...x}))};
+  const base=simulate(sp), mBase=monthly(base,sp);
+  // comparison: the lazy uniform mapping, all 8 turns on the mid tier
+  const uni=simulate(gp), mUni=monthly(uni,gp);
+  // reduction plan applied on top of the three-agent baseline
+  let q={...sp, stages:sp.stages.map(x=>({...x}))};
+  DATA.levers.filter(l=>GUIDE_LEVERS.includes(l.id)).forEach(l=>l.apply(q));
+  const red=simulate(q), mRed=monthly(red,q);
+  $("g-cost").textContent="≈ "+fmt$(base.cost);
+  $("g-co2").textContent="≈ "+fmtN(base.g,"g")+" CO₂e";
+  $("g-mcost").textContent=fmt$(mBase.cost);
+  $("g-menergy").textContent=fmtN(mBase.kwh,"kWh");
+  $("g-mco2").textContent=fmtN(mBase.kg,"kg");
+  $("g-split").textContent=fmtN(base.gOp,"g")+" operational + "+fmtN(base.gEmb,"g")+" embodied";
+  // per-stage pricing table (raw sums; retries/PUE applied in the footer rows)
+  const stgFmt$ = x => x>=0.01? "$"+x.toFixed(3) : "$"+x.toFixed(5);
+  const sub = base.perStage.reduce((a,x)=>({cost:a.cost+x.cost, wh:a.wh+x.wh, i:a.i+x.inTok, o:a.o+x.outTok}),{cost:0,wh:0,i:0,o:0});
+  $("g-stgrows").innerHTML =
+    base.perStage.map(x=>`<tr><td><b>${x.role}</b></td><td>${x.model.split(" ")[0].toLowerCase()}</td><td>${x.turns}</td><td>${x.inTok.toLocaleString()}</td><td>${x.outTok.toLocaleString()}</td><td>${stgFmt$(x.cost)}</td><td>${fmtN(x.wh,"Wh")}</td></tr>`).join("")
+    + `<tr style="border-top:1.5px solid var(--ink)"><td><b>subtotal</b></td><td></td><td>8</td><td>${sub.i.toLocaleString()}</td><td>${sub.o.toLocaleString()}</td><td><b>${stgFmt$(sub.cost)}</b></td><td><b>${fmtN(sub.wh,"Wh")}</b></td></tr>`
+    + `<tr><td colspan="5">× 1.10 retries · × 1.2 PUE · × grid + embodied → <b>per ticket</b></td><td><b>${fmt$(base.cost)}</b></td><td><b>${fmtN(base.g,"g")} CO₂e</b></td></tr>`;
+  // turn-level walkthrough, from the same simulation
+  const pM=DATA.models.find(m=>m.id==="mid"), pS=DATA.models.find(m=>m.id==="small");
+  const tc=(tin,out,m)=>(tin*m.inPrice+out*m.outPrice)/1e6;
+  $("g-w1in").textContent=base.perTurn[0].toLocaleString()+" tok";
+  $("g-w1c").textContent="≈ "+stgFmt$(tc(base.perTurn[0],60,pS));
+  $("g-w2in").textContent=base.perTurn[1].toLocaleString()+" tok";
+  $("g-w2c").textContent="≈ "+stgFmt$(tc(base.perTurn[1],450,pM));
+  $("g-w7in").textContent=base.perTurn[6].toLocaleString()+" tok";
+  $("g-w8in").textContent=base.perTurn[7].toLocaleString()+" tok";
+  $("g-w8c").textContent="≈ "+stgFmt$(tc(base.perTurn[7],100,pS));
+  $("g-ucost").textContent="≈ "+fmt$(uni.cost);
+  $("g-uco2").textContent="≈ "+fmtN(uni.g,"g")+" CO₂e";
+  $("g-umcost").textContent=fmt$(mUni.cost)+"/mo";
+  $("g-upct").textContent="−"+((1-base.cost/uni.cost)*100).toFixed(0)+"% cost, −"+((1-base.g/uni.g)*100).toFixed(0)+"% carbon";
+  $("g-rcost").textContent=fmt$(mRed.cost);
+  $("g-rco2").textContent=fmtN(mRed.kg,"kg");
+  $("g-pct").textContent="−"+((1-mRed.cost/mBase.cost)*100).toFixed(0)+"% cost, −"+((1-mRed.kg/mBase.kg)*100).toFixed(0)+"% carbon";
+  // single-agent tab: uniform baseline, its own reduction plan, its own walkthrough
+  $("gs-cost").textContent="≈ "+fmt$(uni.cost);
+  $("gs-co2").textContent="≈ "+fmtN(uni.g,"g")+" CO₂e";
+  $("gs-mcost").textContent=fmt$(mUni.cost);
+  $("gs-menergy").textContent=fmtN(mUni.kwh,"kWh");
+  $("gs-mco2").textContent=fmtN(mUni.kg,"kg");
+  $("gs-split").textContent=fmtN(uni.gOp,"g")+" operational + "+fmtN(uni.gEmb,"g")+" embodied";
+  $("gs-vs").textContent="−"+((1-base.cost/uni.cost)*100).toFixed(0)+"% cost, −"+((1-base.g/uni.g)*100).toFixed(0)+"% carbon";
+  let qU={...gp};
+  DATA.levers.filter(l=>GUIDE_LEVERS.includes(l.id)).forEach(l=>l.apply(qU));
+  const redU=simulate(qU), mRedU=monthly(redU,qU);
+  $("gs-rcost").textContent=fmt$(mRedU.cost);
+  $("gs-rco2").textContent=fmtN(mRedU.kg,"kg");
+  $("gs-pct").textContent="−"+((1-mRedU.cost/mUni.cost)*100).toFixed(0)+"% cost, −"+((1-mRedU.kg/mUni.kg)*100).toFixed(0)+"% carbon";
+  $("gs-w1in").textContent=uni.perTurn[0].toLocaleString()+" tok";
+  $("gs-w1c").textContent="≈ "+stgFmt$(tc(uni.perTurn[0],450,pM));
+  $("gs-w8in").textContent=uni.perTurn[7].toLocaleString()+" tok";
+  $("gs-w8c").textContent="≈ "+stgFmt$(tc(uni.perTurn[7],450,pM));
+}
+function loadGuide(withLevers, withStages){
+  Object.assign(state,{ model:GUIDE.model, grid:GUIDE.grid, turns:GUIDE.turns, sys:GUIDE.sys,
+    out:GUIDE.out, reason:GUIDE.reason, tool:GUIDE.tool, retry:GUIDE.retry, runs:GUIDE.runs, preset:null });
+  state.stagesOn = !!withStages;
+  if(withStages) state.stages = GUIDE_STAGES.map(x=>({...x}));
+  DATA.levers.forEach(l=>state.levers[l.id]=withLevers&&GUIDE_LEVERS.includes(l.id));
+  buildPresets(); buildModels(); buildGrids(); buildLevers(); buildStages(); syncSliders(); update();
+  showView("calc");
+  const rc=document.getElementById("receipt"); if(rc.scrollIntoView) rc.scrollIntoView({behavior:"smooth",block:"center"});
+}
+$("g-load").onclick=()=>loadGuide(false,true);
+$("g-load-red").onclick=()=>loadGuide(true,true);
+$("gs-load").onclick=()=>loadGuide(false,false);
+$("gs-load-red").onclick=()=>loadGuide(true,false);
+document.querySelectorAll(".ptab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".ptab").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+  document.querySelectorAll(".pview").forEach(v=>v.classList.toggle("on", v.id==="pv-"+b.dataset.p));
+});
+document.querySelectorAll(".gtab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".gtab").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+  document.querySelectorAll(".gview").forEach(v=>v.classList.toggle("on", v.id==="gv-"+b.dataset.g));
+});
+
+buildPresets(); buildModels(); buildGrids(); buildLevers(); buildStages(); buildBand(); syncSliders(); update(); renderGuide();
+</script>
+</body>
+</html>

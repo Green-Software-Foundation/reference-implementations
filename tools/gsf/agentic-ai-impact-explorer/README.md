@@ -8,6 +8,13 @@ Part of the [GSF Reference Implementations](https://github.com/Green-Software-Fo
 
 ---
 
+## Try it live
+
+- **[Open the tool in your browser](https://green-software-foundation.github.io/reference-implementations/tools/gsf/agentic-ai-impact-explorer/)** — no download required
+- Or clone this repository and open `index.html` locally (see [How to use it](#how-to-use-it) below)
+
+---
+
 ## What it is
 
 An agent is not one model call — and a production system is rarely one agent. A single user request fans out across a team of roles (a router, a worker loop with tool use and retries, a guardrail), and every turn re-processes an ever-growing transcript. The resulting cost compounds in a way no per-token price sheet reveals, and the energy, carbon, and water behind it never appear on any invoice. What can't be seen can't be reduced.

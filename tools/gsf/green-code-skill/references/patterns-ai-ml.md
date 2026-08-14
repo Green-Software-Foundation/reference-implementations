@@ -47,6 +47,15 @@ This file consolidates AI/ML patterns across two families: model and training pa
 - **Trade-off:** Shifts M to client devices. Name this explicitly.
 - **URL:** https://patterns.greensoftware.foundation/architecture/system-topology/energy-efficent-ai-edge
 
+### Optimize power-performance for edge AI inference
+- **Problem:** Edge AI deployment strategies optimize for accuracy and latency without treating power as a first-class metric, which drains batteries, triggers thermal throttling, and shortens device lifespan.
+- **Detection signals:** Inference always run at peak frequency/precision regardless of battery level or temperature; no DVFS, thermal-aware throttling, or battery-tier policies; no linked energy/latency/accuracy measurement per model variant or power mode.
+- **Fix:** Add power-aware workload scheduling (defer non-urgent inference, thermal-aware throttling, tiered battery-level policies, DVFS, placement across heterogeneous CPU/GPU/NPU/non-von-Neumann accelerators); expose a small set of named modes (Performance/Balanced/Power Saver) calibrated from the energy-latency-accuracy triplet rather than raw knobs; close the loop with fleet telemetry.
+- **SCI:** Reduces E (operational energy, longer battery life) and M (fewer battery/device replacements from reduced thermal stress); can reduce I via time-shifting workloads to cleaner-grid or charging windows.
+- **Trade-off:** Deferring or throttling inference adds latency; scheduling, mode calibration, and telemetry add engineering and testing complexity. Start with simple battery-tier policies before adaptive systems.
+- **Pillar:** Energy efficiency, hardware efficiency.
+- **URL:** https://patterns.greensoftware.foundation/operations/optimize-edge-ai-power-performance
+
 ### Select a more energy-efficient AI/ML framework
 - **Problem:** Frameworks differ significantly in throughput per watt for the same model on the same hardware.
 - **Detection signals:** Eager-mode PyTorch in production inference, no consideration of optimized runtimes.

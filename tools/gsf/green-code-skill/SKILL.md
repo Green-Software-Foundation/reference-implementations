@@ -126,7 +126,7 @@ Detailed pattern entries (problem, detection signals, fix approach, SCI term, ca
 |---|---|---|
 | `references/patterns-development.md` | 23 Development patterns | Code-level: data handling, media, web performance, async, compression, TLS termination |
 | `references/patterns-architecture.md` | 17 Architecture patterns | System-level: region selection, containers, serverless, statelessness, scaling |
-| `references/patterns-ai-ml.md` | 9 AI/ML model and training patterns + 10 agentic AI workload patterns | Model selection, edge inference, agentic loops, LLM caching, retry budgets, planning depth |
+| `references/patterns-ai-ml.md` | 10 AI/ML model and training patterns + 10 agentic AI workload patterns | Model selection, edge inference, agentic loops, LLM caching, retry budgets, planning depth |
 | `references/sci-formula.md` | SCI specification primer | Whenever the user asks "how does this reduce carbon?" or wants the math |
 | `references/trade-offs.md` | When NOT to apply a pattern | Always consult before applying anything aggressive |
 

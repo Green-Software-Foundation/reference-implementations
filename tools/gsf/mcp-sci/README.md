@@ -9,8 +9,6 @@ It answers one question in working code:
 > When an AI agent calls a tool over MCP, how can the tool tell the agent what
 > that call cost in energy and carbon, in a standard way?
 
-Proposed location in the GSF collection:
-`specifications/sci-for-ai/community/mcp-extension/`
 
 ---
 
@@ -20,9 +18,8 @@ This is an **educational, illustrative prototype**, not a standard and not
 production code.
 
 - The MCP extension shape here is a **proposal to start a conversation**. The
-  normative specification is intended to be developed as a joint working-group
-  project between the Green Software Foundation and the Agentic AI Foundation
-  (which stewards MCP). See [Next steps](#next-steps).
+  normative specification is intended to be developed as a GSF working-group
+  project. See [Next steps](#next-steps).
 - The energy figures come from a **mock model with estimated per-token energy**.
   They are not measurements and not claims about any real provider.
 - The SCI maths is the GSF formula, unchanged. What this project adds is only

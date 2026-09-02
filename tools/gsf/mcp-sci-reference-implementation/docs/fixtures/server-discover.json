@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+      "name": "sci-demo",
+      "version": ""
+    }
+  },
+  "ttlMs": 0,
+  "cacheScope": "private",
+  "supportedVersions": [
+    "2026-07-28"
+  ],
+  "capabilities": {
+    "prompts": {
+      "listChanged": true
+    },
+    "resources": {
+      "subscribe": true,
+      "listChanged": true
+    },
+    "tools": {
+      "listChanged": true
+    },
+    "extensions": {
+      "foundation.greensoftware/sustainability": {
+        "version": "0.1.0-experimental",
+        "methodology": "SCI-for-AI",
+        "publisher": {
+          "name": "Example Service Provider"
+        }
+      }
+    }
+  },
+  "resultType": "complete"
+}

@@ -1,0 +1,147 @@
+Run 1: client declares the extension -> expects disclosure on tools/list and attribution on tools/call
+protocol: 2026-07-28
+
+== client WITH the extension ==
+server advertises: {"version": "0.1.0-experimental", "methodology": "SCI-for-AI", "publisher": {"name": "Example Service Provider"}}
+tools/list cache hint: ttlMs=3600000 cacheScope=public
+
+tools/list -> summarize _meta:
+{
+  "version": "0.1.0-experimental",
+  "methodology": {
+    "id": "SCI-for-AI",
+    "base": "SCI (ISO/IEC 21031:2024)",
+    "uri": "https://sci-for-ai.greensoftware.foundation/"
+  },
+  "functionalUnit": {
+    "name": "request",
+    "description": "One summarization request, whatever its length."
+  },
+  "boundary": {
+    "persona": "consumer",
+    "phase": "inference",
+    "description": "Inference on the hosted model endpoint: GPU/host energy for the call and an allocated share of hardware embodied emissions. Excludes model training, network transit, the MCP transport itself, and the calling agent.",
+    "includes": [
+      "compute",
+      "embodied-hardware"
+    ],
+    "excludes": [
+      "training",
+      "network-transit",
+      "mcp-transport",
+      "calling-agent"
+    ]
+  },
+  "typical": {
+    "sci": {
+      "value": 0.000545664,
+      "unit": "gCO2e/request"
+    },
+    "energy": {
+      "value": 8.4e-06,
+      "unit": "kWh",
+      "basis": "estimated"
+    },
+    "basis": "estimated",
+    "note": "Typical request of 400 input and 60 output tokens."
+  }
+}
+
+tools/call -> content: The Green Software Foundation's SCI for AI specification extends the ISO SCI standard to AI systems. It defines functional units suited to inference and training, ...
+tools/call -> _meta (SCI attribution for this call):
+{
+  "version": "0.1.0-experimental",
+  "methodology": "SCI-for-AI",
+  "functionalUnit": {
+    "name": "request",
+    "quantity": 1
+  },
+  "boundary": {
+    "persona": "consumer",
+    "phase": "inference"
+  },
+  "energy": {
+    "value": 2.844e-06,
+    "unit": "kWh",
+    "basis": "estimated"
+  },
+  "carbonIntensity": {
+    "value": 0.058,
+    "unit": "kgCO2e/kWh",
+    "region": "europe-north1",
+    "basis": "location-based"
+  },
+  "emissions": {
+    "operational": 0.000164952,
+    "embodied": 1.9794e-05,
+    "total": 0.000184746,
+    "unit": "gCO2e",
+    "embodiedBasis": "estimated (12% of operational)"
+  },
+  "sci": {
+    "value": 0.000184746,
+    "unit": "gCO2e/request"
+  },
+  "details": {
+    "model": "mock-mini",
+    "inputTokens": 67,
+    "outputTokens": 34,
+    "outcome": "completed",
+    "energySource": "Illustrative; mini-tier estimate calibrated in the GSF llm-inference example"
+  }
+}
+
+Run 2: plain MCP client -> expects the same tool result, with NO attribution
+protocol: 2026-07-28
+
+== client WITHOUT the extension ==
+server advertises: {"version": "0.1.0-experimental", "methodology": "SCI-for-AI", "publisher": {"name": "Example Service Provider"}}
+tools/list cache hint: ttlMs=3600000 cacheScope=public
+
+tools/list -> summarize _meta:
+{
+  "version": "0.1.0-experimental",
+  "methodology": {
+    "id": "SCI-for-AI",
+    "base": "SCI (ISO/IEC 21031:2024)",
+    "uri": "https://sci-for-ai.greensoftware.foundation/"
+  },
+  "functionalUnit": {
+    "name": "request",
+    "description": "One summarization request, whatever its length."
+  },
+  "boundary": {
+    "persona": "consumer",
+    "phase": "inference",
+    "description": "Inference on the hosted model endpoint: GPU/host energy for the call and an allocated share of hardware embodied emissions. Excludes model training, network transit, the MCP transport itself, and the calling agent.",
+    "includes": [
+      "compute",
+      "embodied-hardware"
+    ],
+    "excludes": [
+      "training",
+      "network-transit",
+      "mcp-transport",
+      "calling-agent"
+    ]
+  },
+  "typical": {
+    "sci": {
+      "value": 0.000545664,
+      "unit": "gCO2e/request"
+    },
+    "energy": {
+      "value": 8.4e-06,
+      "unit": "kWh",
+      "basis": "estimated"
+    },
+    "basis": "estimated",
+    "note": "Typical request of 400 input and 60 output tokens."
+  }
+}
+
+tools/call -> content: The Green Software Foundation's SCI for AI specification extends the ISO SCI standard to AI systems. It defines functional units suited to inference and training, ...
+tools/call -> _meta: no sustainability data.
+  Expected: this client did not declare the extension, so it gets a plain MCP result.
+
+Done. Both behaviours are correct: sustainability data is opt-in and never changes the tool result.

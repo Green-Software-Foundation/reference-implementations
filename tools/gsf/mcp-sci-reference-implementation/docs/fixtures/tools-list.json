@@ -1,0 +1,90 @@
+{
+  "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+      "name": "sci-demo",
+      "version": ""
+    }
+  },
+  "ttlMs": 3600000,
+  "cacheScope": "public",
+  "tools": [
+    {
+      "name": "summarize",
+      "description": "Summarize a piece of text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "max_words": {
+            "default": 40,
+            "title": "Max Words",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "summarizeArguments"
+      },
+      "outputSchema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "summarizeOutput",
+        "type": "object"
+      },
+      "_meta": {
+        "foundation.greensoftware/sustainability": {
+          "version": "0.1.0-experimental",
+          "methodology": {
+            "id": "SCI-for-AI",
+            "base": "SCI (ISO/IEC 21031:2024)",
+            "uri": "https://sci-for-ai.greensoftware.foundation/"
+          },
+          "functionalUnit": {
+            "name": "request",
+            "description": "One summarization request, whatever its length."
+          },
+          "boundary": {
+            "persona": "consumer",
+            "phase": "inference",
+            "description": "Inference on the hosted model endpoint: GPU/host energy for the call and an allocated share of hardware embodied emissions. Excludes model training, network transit, the MCP transport itself, and the calling agent.",
+            "includes": [
+              "compute",
+              "embodied-hardware"
+            ],
+            "excludes": [
+              "training",
+              "network-transit",
+              "mcp-transport",
+              "calling-agent"
+            ]
+          },
+          "typical": {
+            "sci": {
+              "value": 0.000545664,
+              "unit": "gCO2e/request"
+            },
+            "energy": {
+              "value": 8.4e-06,
+              "unit": "kWh",
+              "basis": "estimated"
+            },
+            "basis": "estimated",
+            "note": "Typical request of 400 input and 60 output tokens."
+          }
+        }
+      }
+    }
+  ],
+  "resultType": "complete"
+}

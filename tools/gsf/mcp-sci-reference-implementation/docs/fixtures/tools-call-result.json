@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "foundation.greensoftware/sustainability": {
+      "version": "0.1.0-experimental",
+      "methodology": "SCI-for-AI",
+      "functionalUnit": {
+        "name": "request",
+        "quantity": 1
+      },
+      "boundary": {
+        "persona": "consumer",
+        "phase": "inference"
+      },
+      "energy": {
+        "value": 1.464e-06,
+        "unit": "kWh",
+        "basis": "estimated"
+      },
+      "carbonIntensity": {
+        "value": 0.058,
+        "unit": "kgCO2e/kWh",
+        "region": "europe-north1",
+        "basis": "location-based"
+      },
+      "emissions": {
+        "operational": 8.4912e-05,
+        "embodied": 1.0189e-05,
+        "total": 9.5101e-05,
+        "unit": "gCO2e",
+        "embodiedBasis": "estimated (12% of operational)"
+      },
+      "sci": {
+        "value": 9.5101e-05,
+        "unit": "gCO2e/request"
+      },
+      "details": {
+        "model": "mock-mini",
+        "inputTokens": 37,
+        "outputTokens": 17,
+        "outcome": "completed",
+        "energySource": "Illustrative; mini-tier estimate calibrated in the GSF llm-inference example"
+      }
+    },
+    "io.modelcontextprotocol/serverInfo": {
+      "name": "sci-demo",
+      "version": ""
+    }
+  },
+  "content": [
+    {
+      "type": "text",
+      "text": "The Green Software Foundation's SCI for AI specification extends the ISO SCI ..."
+    }
+  ],
+  "structuredContent": {
+    "result": "The Green Software Foundation's SCI for AI specification extends the ISO SCI ..."
+  },
+  "isError": false,
+  "resultType": "complete"
+}

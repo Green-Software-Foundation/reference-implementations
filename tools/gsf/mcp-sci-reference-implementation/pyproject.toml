@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-sci"
+version = "0.1.0"
+description = "Reference implementation: carrying GSF SCI for AI metrics over the Model Context Protocol via an MCP extension."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["mcp", "sci", "sci-for-ai", "green-software", "sustainability", "carbon"]
+dependencies = ["mcp>=2.1"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+mcp-sci-server = "mcp_sci.server:main"
+mcp-sci-demo = "mcp_sci.client:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

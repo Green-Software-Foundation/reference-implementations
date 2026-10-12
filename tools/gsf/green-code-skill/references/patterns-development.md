@@ -63,7 +63,7 @@ All 23 patterns from the GSF Development category. Each entry includes the probl
 - **URL:** https://patterns.greensoftware.foundation/development/media-and-code-efficiency/defer-offscreen-images
 
 ### Deprecate GIFs for animated content
-- **Problem:** Animated GIFs are 5–10× larger than equivalent MP4/WebM and have lower visual quality.
+- **Problem:** Animated GIFs are typically several times larger than equivalent MP4/WebM and have lower visual quality.
 - **Detection signals:** `.gif` files with animation, `<img src="*.gif">` for motion content.
 - **Fix:** Encode as MP4 (H.264) or WebM (VP9/AV1), use `<video autoplay muted loop playsinline>`.
 - **SCI:** Reduces E (much smaller payloads → less network and decode).

@@ -1,82 +1,88 @@
 # AGENTS.md — Green Code Skill (Portable Edition)
 
-> Single-file, drop-in instructions for any agentic coding tool (Codex, Antigravity, Cursor, Aider, Continue, Cline, etc.). For tools that support multi-file skills with progressive disclosure (Anthropic skills), use the `SKILL.md` + `references/` version in this repo instead — it's the same content with detailed pattern entries split out.
+> Single-file edition for agentic coding tools that read one instruction file (Codex, Antigravity, Cursor, Aider, Continue, Cline). Tools with multi-file skills should use `SKILL.md` + `modes/` + `references/` from the same package. An educational reference implementation from [GSF Reference Implementations](https://github.com/Green-Software-Foundation/reference-implementations) (`tools/gsf/`).
 
-This file makes the agent generate and review code against Green Software Foundation (GSF) patterns and the Software Carbon Intensity (SCI) specification.
+Green Software Foundation (GSF) patterns and the Software Carbon Intensity (SCI) specification, applied in three modes: **write**, **review**, and **measure**.
 
-## About this guidance
+## When to activate
 
-This is an educational reference implementation from the [GSF Reference Implementations](https://github.com/Green-Software-Foundation/reference-implementations) collection, contributed by the Green Software Foundation under `tools/gsf/`. It demonstrates one concrete way to encode Green Software Foundation patterns as an agent skill. Recommendations should be applied with engineering judgment for the target context. The skill is a design-time and review-time advisor, not a runtime measurement tool — for real numbers, pair with CodeCarbon, Cloud Carbon Footprint, Kepler, or the Impact Framework.
+- The user mentions carbon, energy, or sustainability.
+- The user asks to cut compute or cloud cost (usually SCI-aligned even without "green" framing).
+- The user wants to measure or verify the energy impact of code or a change.
+- The user is building cloud backends, web frontends, data pipelines, AI/ML, or agentic AI systems.
+- A code review turns up obvious green anti-patterns (uncompressed assets, unbounded retries, full-scan queries, sync I/O loops).
 
-## When to activate this guidance
+Stand down for single-line fixes, test scaffolding, and work where green patterns would defeat the goal (an intentional stress test).
 
-Apply these instructions whenever any of these is true:
+## Pick one mode
 
-- The user mentions sustainability, carbon, energy, emissions, green, eco-friendly, or climate impact.
-- The user mentions reducing compute or cloud cost (usually SCI-aligned even without "green" framing).
-- The user is generating code for cloud workloads, AI/ML pipelines, agentic AI systems, web frontends, or data handling.
-- The user asks for a code review and the code has obvious green anti-patterns (uncompressed assets, unbounded retries, full-scan queries, sync I/O loops, etc.).
+| The user wants | Mode |
+|---|---|
+| New code, a refactor, or a design | **Write** |
+| Existing code audited | **Review** |
+| Numbers: energy or emissions of real runs, before/after a change | **Measure** |
 
-Do NOT apply this to single-line bug fixes, unit-test scaffolding, or work where applying green patterns would clearly conflict with stated goals (intentional stress tests, etc.).
+Follow only that mode's section and finish its output before starting another mode. Modes hand off. A review finding or a written change becomes a measure baseline when the user wants evidence. A measurement with no measurable difference goes back to review for a better candidate.
 
-## The SCI backbone
-
-Every recommendation maps to the SCI formula:
+## SCI backbone
 
 ```
 SCI = (E × I) + M   per R
-
-E = Energy consumed by the software
-I = Carbon intensity of that energy (location/time)
-M = Embodied emissions of the hardware (amortized)
-R = Functional unit (per user, per request, per inference)
 ```
 
-What code can move:
-- **E** — most patterns target this. Compress, cache, async, smaller models, fewer calls.
-- **I** — code mostly *enables* I improvements via deferrable workloads; the deploy layer chooses cleaner regions/times.
-- **M** — right-sizing, serverless, container density, edge inference (note: shifts M to client).
-- **R** — denominator. SSR (one render serves many), batching (one job serves many), pre-trained models (one training serves many tasks).
+- **E**: energy the software consumes. Most patterns target E: compress, cache, async, smaller models, fewer calls.
+- **I**: carbon intensity of that energy (where and when it runs). The deploy layer moves I. Code only *enables* I-aware execution by making work deferrable.
+- **M**: embodied hardware emissions, amortized. Moves with right-sizing, serverless, and container density. Edge inference shifts M onto client devices.
+- **R**: the functional unit (per request, per user, per inference). It is the denominator: SSR (one render serves many), batching, and pre-trained models improve R.
 
-Three GSF pillars to organize recommendations under:
-1. Energy efficiency — same work, less compute/network/storage (E).
-2. Hardware efficiency — less hardware or longer-lived hardware (M).
-3. Carbon awareness — flexible work runs when/where grid is cleaner (I).
+Organize recommendations under the three GSF pillars: **energy efficiency** (E), **hardware efficiency** (M), **carbon awareness** (I).
 
-## Two modes
+## Honesty rules (every mode)
 
-### Mode 1: Code generation
+1. **Numbers come from measurement.** Quote a figure only from a Measure-mode run or data the user supplied, and name its method alongside it. Everywhere else, use *directional* language: "reduces E for every request", "roughly halves network bytes", "removes a render per visit".
+2. **Name the trade-off** beside each recommendation: latency from carbon-aware scheduling, staleness from caching, M shifted to clients by edge inference.
+3. **Context beats the pattern.** Real-time paths stay unbatched, a 10-user admin tool stays client-rendered, a prototype trains nothing. Check the trade-offs section before applying anything aggressive.
+4. **Code moves E, M, and R.** For I, say the code *enables* cleaner scheduling or regions.
+5. **Cite the pattern** with its URL under https://patterns.greensoftware.foundation/. If a URL 404s, link the catalog root and say the pattern may have moved.
 
-1. Identify workload type (web, cloud backend, data pipeline, AI/ML, agentic AI).
-2. Pick the 2–5 patterns most applicable. Don't try to apply all.
-3. Write the code with those patterns baked in by default.
-4. End with a Green Notes block.
+## Mode: Write
 
-Generation output template:
+New code, refactors, and designs with green patterns built into the first draft.
+
+1. **Name the workload**: web frontend, cloud backend, data pipeline, AI/ML, agentic AI, or a mix. Note the scale signals the user gave (traffic, data volume, call rate), because they decide which patterns pay off.
+2. **Shortlist 2–5 patterns** from the catalog below. Keep a pattern only if it passes the four-part test in the trade-offs section. Done when every shortlisted pattern passes and every rejected candidate has a one-line reason.
+3. **Write the code with the shortlist as defaults**, so the patterns are visible in the code itself: bounded retries, async I/O, paginated and projected queries, compressed payloads, a cache in front of LLM calls.
+4. **Append Green Notes.** Done when every applied pattern has an entry with its SCI term and URL, and every rejected candidate appears under *Trade-offs considered*.
 
 ```
 <code>
 
 ---
 Green Notes
-- <Pattern name> (reduces E) — <one-sentence reason>
+- <Pattern name> (reduces E) — <one sentence on why it pays off here>
   https://patterns.greensoftware.foundation/<path>
-- <Pattern name> (reduces M) — <one-sentence reason>
 
-Trade-offs considered: <patterns deliberately not applied and why>
+Trade-offs considered: <rejected patterns and why, e.g. "skipped SSR: internal admin tool, <10 concurrent users">
 ```
 
-If no pattern applies, say so plainly. Don't invent patterns to fill space.
+When no pattern fits, write `Green Notes: no pattern applies — <reason>` in place of the block.
 
-### Mode 2: Code review
+## Mode: Review
 
-1. Read the code fully before flagging.
-2. Identify workload type.
-3. Scan for anti-patterns (see catalog below).
-4. Produce structured findings, sorted high → low severity.
-5. Estimate impact qualitatively — never invent numbers.
+Existing code audited against green patterns, reported as severity-ranked findings.
 
-Review output template:
+1. **Read every file in scope end to end** before flagging anything. Done when you can list the files reviewed.
+2. **Name the workload(s)** and take the matching catalog sections below.
+3. **Sweep the detection signals.** Check each pattern in those sections against the code and sort it into one bucket: *finding*, *pass*, *out of scope* (needs ops input: region, instance type, grid), or *not applicable* (no such code). Done when every pattern in those sections sits in exactly one bucket.
+4. **Test each finding against context** using the trade-offs section. Drop or downgrade findings the context makes wrong.
+5. **Rate severity and write the report**, sorted High → Low. Leave *not applicable* out.
+
+Severity:
+- **High**: scaled, ongoing emissions on every request or every user. Examples: uncompressed images served to all visitors; unbounded LLM retries on a production hot path.
+- **Medium**: meaningful but bounded, or the fix is non-trivial. Example: sync I/O in an hourly batch job.
+- **Low**: minor or context-dependent. Example: one decorative GIF.
+
+SCI impact stays *directional*. When the user disputes a High finding's impact or wants numbers, offer Measure mode with the current code as baseline and the fix as variant.
 
 ```
 ## Green Software Review
@@ -90,32 +96,44 @@ Review output template:
 - **Location:** <file:line or function>
 - **Issue:** <one or two sentences>
 - **Pattern:** <name + URL>
-- **SCI impact:** <which term, qualitative magnitude>
+- **SCI impact:** <which term, directional magnitude>
 - **Suggested fix:** <concrete refactor>
 
 #### [Medium] ...
 #### [Low] ...
 
 ### Patterns checked and passed
-- <list patterns the code already follows>
+- <patterns the code already follows>
 
 ### Out of scope (need ops/architecture input)
-- <patterns that can't be assessed from code alone — region, instance type, grid intensity>
+- <patterns code alone can't settle: region, instance type, grid intensity>
 ```
 
-Severity:
-- **High** — scaled, ongoing emissions impact (every request, every user). E.g., uncompressed images served to all visitors; unbounded LLM retries in prod hot path.
-- **Medium** — meaningful but bounded, or fix is non-trivial. E.g., sync I/O in hourly batch.
-- **Low** — minor or context-dependent. E.g., one decorative GIF.
+## Mode: Measure
 
-## Honesty and trade-off rules (non-negotiable)
+Energy and operational carbon of real runs, measured with [CodeCarbon](https://github.com/mlco2/codecarbon). Usually a before/after comparison: a **baseline** and one or more **variants** doing the same work. CodeCarbon sees **this machine only**: LLM API inference, remote databases, and other services do not appear in its numbers. For API-bound code, use call and token counts as the proxy for the remote side and say so.
 
-1. **Never invent quantitative numbers.** "Saves 47% energy" without measurement is fabrication. Use directional language — "reduces E", "roughly halves network bytes", "removes a render per visit".
-2. **Surface trade-offs.** Carbon-aware scheduling adds latency. Aggressive caching adds staleness. Edge inference shifts M to client devices. Name the trade-off.
-3. **Refuse to apply patterns when context makes them wrong.** Real-time trading code doesn't get batched. A 10-user admin tool doesn't need SSR. A prototype doesn't need transfer learning.
-4. **Don't claim code changes move I.** Code can enable I-aware execution; the deploy layer moves I.
-5. **Cite the source pattern.** Link to the GSF pattern page where available (https://patterns.greensoftware.foundation/<path>), so practitioners can reference the canonical source.
-6. **The catalog evolves.** If a pattern URL 404s, fall back to https://patterns.greensoftware.foundation/ and tell the user it may have moved.
+1. **Fix R and the variants.** Agree with the user on the code path, the functional unit R, and how many units one run performs. Done when each variant is one shell command that performs the same R units of work, exits 0, and is safe to repeat. Wrap a Python function in a driver script that loops over it. Use the same fixed inputs everywhere and no network. Size each run to last **10 s or more**. Before measuring commands that write external state or call paid APIs, confirm with the user.
+2. **Run the harness**: `measure.py` from the green-code-skill package's `scripts/` folder ([source](https://github.com/Green-Software-Foundation/reference-implementations/tree/main/tools/gsf/green-code-skill/scripts)); look for a copy in the project first.
+   ```bash
+   uv run <path>/measure.py --variant baseline="python driver.py --impl current" \
+     --variant batched="python driver.py --impl batched" --units 1000 --unit-label record --country DEU
+   ```
+   Without uv, install `codecarbon>=3,<4` into a scratch venv and leave the project's dependency files untouched. Pass `--country` (ISO alpha-3) for the grid where the code runs, because IP geolocation follows VPNs. Without the harness, build the equivalent: one CodeCarbon task per run (`start_task`/`stop_task`, `tracking_mode="machine"`), variants interleaved after a warm-up, median and min–max energy per variant, and the CPU tracking method read from CodeCarbon's log. Done when the harness exits 0 and prints its summary.
+3. **Read the Method line before the numbers.** The run is **measured** (hardware counters: RAPL, Windows EMI, PowerMetrics, NVML, AMDSMI) or **estimated** (CodeCarbon's CPU-load or TDP models). Carry that label onto every number. Estimated energy tracks runtime and CPU load and misses efficiency gains at equal load. When the run is estimated, tell the user that Linux with readable RAPL, Windows 11 on bare metal, or NVIDIA/AMD GPUs give measured readings.
+4. **Judge the difference.** Compare energy, not emissions: every variant ran under the same I. A difference counts only when the min–max ranges are **separated**; overlapping ranges mean "no measurable difference at this run count". When a variant's average power sits close to the idle floor, the measured difference is mostly runtime. Done when every harness warning is resolved by a re-run or carried into the report.
+5. **Report:**
+   ```
+   ## Green Measurement
+
+   **Workload:** <code path> · **R:** <functional unit>, <N> per run
+   **Variants:** <name: what changed>, baseline first
+
+   <harness summary, pasted unchanged>
+
+   **Result:** <variant> uses <X>% less energy per <unit> than <baseline> (<measured|estimated>, ranges separated) | no measurable difference at <runs> runs.
+   **Scope:** operational carbon only (E × I) on this machine and grid. M not measured. Production hardware, load, and grid will differ. <Remote work not captured, if any.>
+   ```
 
 ## Pattern catalog — one-line summaries
 
@@ -183,7 +201,7 @@ For full detail on any pattern, the agent can fetch the URL.
 
 Applied to LLM-driven orchestration, agentic loops, and tool-calling workflows. These patterns target the energy and emissions profile of agentic AI systems, where each loop iteration is a model call and call counts can compound rapidly across planning, retries, and tool invocations.
 
-- **Right-size the model per subtask (model routing)** — small models for classification/extraction/routing; large for synthesis. Reduces E 5–20× per affected step.
+- **Right-size the model per subtask (model routing)** — small models for classification/extraction/routing; large for synthesis. Reduces E on every routed step.
 - **Cap the retry budget** — max attempts 3–5, exponential backoff with hard ceiling, retry only transient errors. Prevents runaway loops.
 - **Bound planning and reasoning depth** — `max_iterations` on agent loops (typically 5–10), break on repeated states.
 - **Cache LLM responses** — exact-match cache (hash of prompt+params); semantic cache (embedding similarity) for near-duplicates.
@@ -214,13 +232,6 @@ Common mistakes to avoid:
 - **Batching real-time workloads** — never apply to chat, trading, search-as-you-type.
 - **Removing analytics the business needs** — sample/aggregate, don't blindly delete.
 - **Eliminating dev environments** — pattern says *minimize*, not *eliminate*; prod incidents have emissions cost too.
-
-## What this guidance is not
-
-- Not a runtime measurement tool. For real SCI numbers: CodeCarbon, Cloud Carbon Footprint, Kepler, Impact Framework.
-- Not a carbon accounting / reporting tool.
-- Not a license to add bloat. If applying a pattern makes code worse on every other axis, don't.
-- Not a substitute for the GSF Practitioner certification or the SCI specification itself.
 
 ## Reading further
 

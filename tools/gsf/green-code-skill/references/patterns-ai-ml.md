@@ -85,7 +85,7 @@ These patterns target the energy and emissions profile of agentic AI systems —
 - **Problem:** Using a frontier model for every step of an agentic pipeline overspends energy on subtasks a small model could handle.
 - **Detection signals:** Single-model agentic loops where every classification, extraction, and routing decision goes to the largest model.
 - **Fix:** Implement a router. Send classification/extraction/routing to small fast models (Haiku-class, 7B local, embedders); reserve large models for synthesis, complex reasoning, and final answers.
-- **SCI:** Reduces E significantly (often 5–20× per affected step).
+- **SCI:** Reduces E on every routed step; the size depends on the model pair, so measure it rather than quote it.
 - **Pillar:** Energy efficiency.
 
 ### Cap the retry budget
@@ -168,4 +168,4 @@ A well-designed agentic system typically applies many of these together. A reaso
 9. `max_tokens` set, stop sequences where applicable.
 10. Loop-detection on tool-call history.
 
-These compose to dramatically reduce E per user goal in agentic workloads, often by 3–10× compared to naive implementations — but you should always **measure** rather than quote that range.
+Each one cuts calls, tokens, or model size per user goal, and together they compound. Measure the combined effect (Measure mode) rather than quoting a multiplier.

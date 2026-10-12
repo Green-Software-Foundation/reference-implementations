@@ -61,4 +61,4 @@ If the response includes code followed by a **Green Notes** block citing GSF pat
 
 ## Next steps
 
-For worked examples of both generation and review modes, prompts to try across workload types, and best-practice prompting patterns, see the [shared usage guide](../GETTING_STARTED.md).
+For worked examples of all three modes (write, review, measure), prompts to try across workload types, and best-practice prompting patterns, see the [shared usage guide](../GETTING_STARTED.md).

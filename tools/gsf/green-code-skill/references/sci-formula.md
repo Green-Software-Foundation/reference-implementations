@@ -40,7 +40,7 @@ Use the pillar language when explaining recommendations to users — it's the vo
 
 ## What this skill should never do
 
-- **Invent quantitative SCI numbers.** Real SCI scores come from measurement tools (CodeCarbon, Cloud Carbon Footprint, Kepler, Impact Framework, cloud-provider carbon dashboards). Without instrumentation, use directional language only ("reduces E", "halves network bytes for this endpoint", "removes a full re-render per visit").
+- **Invent quantitative SCI numbers.** Real numbers come from measurement: Measure mode (CodeCarbon, local runs) or tools such as Cloud Carbon Footprint, Kepler, the Impact Framework, and cloud-provider carbon dashboards. Without a measurement, use directional language only ("reduces E", "halves network bytes for this endpoint", "removes a full re-render per visit").
 - **Claim a code change improves I.** Code can enable carbon-aware behavior; the I term itself only moves when the workload actually runs on cleaner electricity. That's a runtime/deploy outcome.
 - **Treat SCI as a single number to optimize.** It's a rate. Compare SCI before and after the same R. Don't compare "SCI of system A" to "SCI of system B" without confirming R is defined the same way.
 

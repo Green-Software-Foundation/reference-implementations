@@ -57,10 +57,10 @@ If Aider produces code followed by a **Green Notes** block citing GSF pattern UR
 
 **Guidance not applied.** Confirm the file was loaded — Aider prints a confirmation ("Added CONVENTIONS.md to the chat") when `--read` succeeds. If you loaded per-session with `/read`, confirm the file path was correct.
 
-**Context window pressure.** The green-code-skill AGENTS.md is around 300 lines. On projects with very large repo context, you may see context pressure. If this becomes an issue, keep only the top-level workflows and pattern index in Aider's conventions and let Aider fetch pattern details from the canonical GSF URLs when needed.
+**Context window pressure.** The green-code-skill AGENTS.md is around 240 lines. On projects with very large repo context, you may see context pressure. If this becomes an issue, keep only the top-level workflows and pattern index in Aider's conventions and let Aider fetch pattern details from the canonical GSF URLs when needed.
 
 **Aider ignores the conventions in a specific mode.** In some Aider modes, context handling differs. Reload with `/read` if needed, or add the file to your config for automatic loading.
 
 ## Next steps
 
-For worked examples of both generation and review modes, prompts to try across workload types, and best-practice prompting patterns, see the [shared usage guide](../GETTING_STARTED.md).
+For worked examples of all three modes (write, review, measure), prompts to try across workload types, and best-practice prompting patterns, see the [shared usage guide](../GETTING_STARTED.md).

@@ -28,7 +28,7 @@ If Claude produces code followed by a **Green Notes** block citing GSF pattern U
 
 **Skill sharing (Team and Enterprise plans).** From the same Customize → Skills page, you can share the skill with specific colleagues or organization-wide. Recipients get read-only access — they can enable and use the skill but cannot edit it. Updates you push propagate to recipients automatically.
 
-**Runtime environment.** claude.ai custom skills run in Anthropic's managed container. Only pre-installed packages are available at runtime; skills cannot install additional packages during execution.
+**Runtime environment.** claude.ai custom skills run in Anthropic's managed container. Only pre-installed packages are available at runtime; skills cannot install additional packages during execution. Write and review modes work fully. Measure mode needs CodeCarbon and must run your code, and any result would describe the container, not your hardware. Run measure mode from a local tool such as Claude Code.
 
 ## Troubleshooting
 
@@ -40,4 +40,4 @@ If Claude produces code followed by a **Green Notes** block citing GSF pattern U
 
 ## Next steps
 
-For worked examples of both generation and review modes, prompts to try across workload types, and best-practice prompting patterns, see the [shared usage guide](../GETTING_STARTED.md).
+For worked examples of all three modes (write, review, measure), prompts to try across workload types, and best-practice prompting patterns, see the [shared usage guide](../GETTING_STARTED.md).

@@ -1,6 +1,6 @@
 # Green Code Skill — Usage Guide
 
-Shared reference for using the Green Software skill in any coding tool where you have installed it. Covers what the skill does, working examples for both operating modes (generation and review), prompts to try across common workloads, and troubleshooting.
+Shared reference for using the Green Software skill in any coding tool where you have installed it. Covers what the skill does, working examples for all three modes (write, review, measure), prompts to try across common workloads, and troubleshooting.
 
 > This skill is an educational reference implementation from the [GSF Reference Implementations](https://github.com/Green-Software-Foundation/reference-implementations) collection under `tools/gsf/`. Recommendations produced by the skill should be applied with engineering judgment for the target context, and quantitative impact claims should be treated as directional unless backed by runtime measurement. See the [README](./README.md) for the full scope, design choices, and educational context.
 
@@ -8,10 +8,11 @@ If you have not yet installed the skill, see the tool-specific quickstart in [`g
 
 ## What the skill does
 
-The skill activates when your prompt matches its description — anything mentioning sustainability, carbon, energy, green coding, efficiency, cost reduction, or the design of cloud, AI/ML, or agentic AI workloads. It operates in two modes:
+The skill activates when your prompt matches its description — anything mentioning sustainability, carbon, energy, green coding, efficiency, cost reduction, measuring energy impact, or the design of cloud, AI/ML, or agentic AI workloads. It operates in three modes:
 
-- **Generation mode** — writing new code that follows Green Software Foundation patterns by default, with a Green Notes block explaining which patterns were applied and why.
+- **Write mode** — writing new code that follows Green Software Foundation patterns by default, with a Green Notes block explaining which patterns were applied and why.
 - **Review mode** — analyzing existing code against green software patterns and producing a structured findings list with severity, canonical pattern references, and concrete fixes.
+- **Measure mode** — running a baseline and one or more variants under CodeCarbon and reporting energy and operational carbon per functional unit, labelled *measured* or *estimated*.
 
 You do not need to name the skill explicitly in every prompt. Naming it on the first turn is a helpful way to guarantee activation while you get familiar with it.
 
@@ -23,9 +24,9 @@ After installing the skill in your tool of choice (see the [tool-specific quicks
 
 If the response includes code followed by a **Green Notes** block listing patterns applied, the skill is active and working.
 
-## Example 1 — Generating code
+## Example 1 — Writing code
 
-Use generation mode when you want Claude to write new code that follows green software patterns from the start.
+Use write mode when you want Claude to write new code that follows green software patterns from the start.
 
 **Prompt:**
 
@@ -155,6 +156,50 @@ Use review mode when you want to analyze existing code against green software pa
 - Whether this batch job could be scheduled during a low-carbon-intensity window
 ```
 
+## Example 3 — Measuring a change
+
+Use measure mode when you want numbers: the energy and operational carbon of real runs, usually before and after a change. The skill drives [CodeCarbon](https://github.com/mlco2/codecarbon) through the bundled harness `scripts/measure.py`, so it needs a tool that can run commands on your machine (Claude Code, Codex CLI, Cursor, Aider). With `uv` installed, CodeCarbon is installed ephemerally on first run. If you installed only `AGENTS.md`, also copy `scripts/measure.py` into your project.
+
+**Prompt:**
+
+> Measure the energy difference between the loop and builtin implementations in driver.py.
+
+**What happens under the hood:**
+
+1. The agent agrees the functional unit (R) with you, here one million records aggregated, and makes each variant a single command doing identical work. It sizes the work so each run lasts at least ~10 seconds.
+2. It runs the harness. The harness interleaves the variants, discards a warm-up run, measures each run as a CodeCarbon task, and measures an idle floor.
+3. It reads the Method line first. *Measured* means hardware energy counters (RAPL, NVML, and so on). *Estimated* means CodeCarbon's power models. Every number carries that label.
+4. It calls a difference real only when the min–max ranges are separated, and it states what the measurement does not cover.
+
+**Sample output** (a real run on an Apple M4 Pro laptop):
+
+```
+## Green Measurement
+
+**Workload:** driver.py sum-of-squares aggregation · **R:** million records, 300 per run
+**Variants:** loop: explicit for-loop (baseline) · builtin: sum() over a generator
+
+**Method:** CodeCarbon 3.3.1, **estimated** (CPU: cpu_load, GPU: Unspecified, RAM: RAM power estimation model); 5 interleaved runs per variant after 1 warm-up
+**Machine:** Apple M4 Pro · macOS-26.7.1-arm64-arm-64bit-Mach-O
+**Grid:** United States, ~369 gCO₂eq/kWh (CodeCarbon)
+
+| Variant | Energy per run (median, min–max) | Duration (median) | Energy per million records | CO₂eq per million records |
+|---|---|---|---|---|
+| loop | 54.79 mWh (52.82 mWh–57.63 mWh) | 12.65 s | 182.6 µWh | 67.48 µg |
+| builtin | 39.26 mWh (37.64 mWh–40.14 mWh) | 9.22 s | 130.9 µWh | 48.35 µg |
+
+- **builtin vs loop:** -28.3% median energy per run (separated: ranges do not overlap)
+- **Idle floor:** 15.4 W average over 12.7 s (compare variant average power: loop 15.6 W, builtin 15.3 W)
+- ⚠ No CPU tracking mode found. Falling back on CPU load mode.
+
+**Result:** builtin uses 28% less energy per million records than loop (estimated, ranges separated).
+Both variants draw roughly idle-floor power on a single core, so the estimate tracks runtime:
+builtin finishes sooner. A measured run (Linux with readable RAPL) would also capture
+efficiency differences at equal load.
+**Scope:** operational carbon only (E × I) on this machine and grid. Embodied hardware
+emissions (M) are not measured. Production hardware, load, and grid will differ.
+```
+
 ## Prompts to try across workload types
 
 Once you have run one generation and one review, these prompts exercise the breadth of the skill:
@@ -178,6 +223,9 @@ Once you have run one generation and one review, these prompts exercise the brea
 > Review this Dockerfile against green software patterns:
 >
 > [paste your Dockerfile]
+
+**Measuring a review fix**
+> Measure the energy of this batch job before and after the async refactor you suggested, per 1,000 records.
 
 **Architecture review**
 > Review this system design against green software patterns:
@@ -206,6 +254,10 @@ A few practices produce better output from the skill:
 
 **A pattern URL returns 404.** The GSF catalog evolves; a pattern may have been renamed or moved. Ask Claude to verify against the current catalog at https://patterns.greensoftware.foundation/ — the skill is designed to fall back to the index and note when specific URLs have moved.
 
+**Measure results are labelled *estimated*.** CodeCarbon found no hardware energy counters, so it modelled power from CPU utilization. Estimates are useful for comparing variants by runtime and load. For measured numbers, run on Linux with readable RAPL files (`/sys/class/powercap/intel-rapl`), Windows 11 on bare metal, or an NVIDIA/AMD GPU for GPU work.
+
+**Measure mode reports no measurable difference.** The variants' min–max ranges overlapped. Ask for more runs (`--runs 10`) or more work per run. If they still overlap, the change does not move energy enough to show on this machine.
+
 **The recommendations do not fit your context.** Push back on any recommendation that does not match your reality. Example: "this is a low-traffic internal tool used by fewer than 10 people — is server-side rendering actually worthwhile here?" The skill is designed to re-evaluate recommendations against context, surface trade-offs honestly, and refine its guidance.
 
 ## Reading further
@@ -217,7 +269,9 @@ A few practices produce better output from the skill:
 
 Inside this skill package:
 
-- `SKILL.md` — agent-facing skill definition with workflows and output formats
+- `SKILL.md` — agent-facing router: mode selection, SCI backbone, honesty rules, pattern index
+- `modes/write.md`, `modes/review.md`, `modes/measure.md` — per-mode steps and output templates
+- `scripts/measure.py` — CodeCarbon measurement harness used by measure mode
 - `references/sci-formula.md` — SCI grounding and what each SCI term represents
 - `references/patterns-development.md` — 23 Development patterns with detection signals and fixes
 - `references/patterns-architecture.md` — 17 Architecture patterns

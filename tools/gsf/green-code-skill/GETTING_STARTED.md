@@ -221,5 +221,5 @@ Inside this skill package:
 - `references/sci-formula.md` — SCI grounding and what each SCI term represents
 - `references/patterns-development.md` — 23 Development patterns with detection signals and fixes
 - `references/patterns-architecture.md` — 17 Architecture patterns
-- `references/patterns-ai-ml.md` — 9 AI/ML model and training patterns + 10 agentic AI workload patterns
+- `references/patterns-ai-ml.md` — 10 AI/ML model and training patterns + 10 agentic AI workload patterns
 - `references/trade-offs.md` — contextual considerations for applying patterns well

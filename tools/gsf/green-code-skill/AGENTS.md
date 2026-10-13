@@ -179,6 +179,10 @@ For full detail on any pattern, the agent can fetch the URL.
 - Use energy-efficient AI/ML models — match model size to task, routing pattern. → /architecture/technology-selection/energy-efficent-models
 - Use serverless cloud services — FaaS, serverless containers, serverless databases. → /architecture/technology-selection/use-serverless
 
+### Operations (1 pattern)
+
+- Optimize power-performance for edge AI inference — power-aware scheduling, thermal-aware throttling, battery-level policies, DVFS; named modes (Performance/Balanced/Power Saver) calibrated from energy-latency-accuracy triplet. → /operations/optimize-edge-ai-power-performance
+
 ### Agentic AI patterns
 
 Applied to LLM-driven orchestration, agentic loops, and tool-calling workflows. These patterns target the energy and emissions profile of agentic AI systems, where each loop iteration is a model call and call counts can compound rapidly across planning, retries, and tool invocations.

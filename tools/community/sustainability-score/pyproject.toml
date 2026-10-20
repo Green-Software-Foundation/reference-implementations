@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sustainability-score"
+version = "0.1.0"
+description = "GSF SCI-grounded static sustainability score for code repositories"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Srinath Gopinath" }]
+keywords = ["green-software", "sustainability", "sci", "carbon", "static-analysis"]
+
+[project.scripts]
+sustainability-score = "sustainability_score.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
